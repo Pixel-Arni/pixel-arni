@@ -1,6 +1,6 @@
 const { app, BrowserWindow } = require('electron')
 const path = require('path')
-const isDev = process.env.NODE_ENV === 'development'
+const isDev = process.env.NODE_ENV !== 'production'
 
 function createWindow() {
   // Hauptfenster erstellen
@@ -16,10 +16,10 @@ function createWindow() {
   })
 
   // React-App laden
-  const startUrl = isDev 
-    ? 'http://localhost:5173' 
+  const startUrl = isDev
+    ? 'http://localhost:5174'
     : `file://${path.join(__dirname, '../dist/index.html')}`
-  
+ 
   mainWindow.loadURL(startUrl)
 
   // Fenster zeigen wenn bereit
