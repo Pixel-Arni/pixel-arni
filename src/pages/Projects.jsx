@@ -1,52 +1,6 @@
 import React, { useState } from 'react'
 
-const Projects = ({ clients }) => {
-  // State für Projekte
-  const [projects, setProjects] = useState([
-    {
-      id: 1,
-      name: "Fitness Studio Website",
-      client: "Max Mustermann",
-      clientId: 1,
-      status: "In Arbeit",
-      priority: "Hoch",
-      deadline: "2024-12-31",
-      budget: 2500,
-      progress: 65,
-      description: "Moderne Landing Page für Fitness Studio mit Terminbuchung",
-      createdDate: "2024-01-15",
-      updatedDate: "2024-01-20"
-    },
-    {
-      id: 2,
-      name: "Restaurant Landing Page",
-      client: "Anna Schmidt",
-      clientId: 2,
-      status: "Review",
-      priority: "Mittel",
-      deadline: "2024-12-15",
-      budget: 1800,
-      progress: 90,
-      description: "Elegante Website für Restaurant mit Online-Reservierung",
-      createdDate: "2024-02-01",
-      updatedDate: "2024-02-10"
-    },
-    {
-      id: 3,
-      name: "SaaS Landing Page",
-      client: "Tech Startup",
-      clientId: 3,
-      status: "Fertig",
-      priority: "Niedrig",
-      deadline: "2024-11-30",
-      budget: 3200,
-      progress: 100,
-      description: "Professionelle SaaS Landing Page mit Pricing-Sektion",
-      createdDate: "2024-03-01",
-      updatedDate: "2024-03-15"
-    }
-  ])
-
+const Projects = ({ clients, projects, setProjects }) => {
   // State für neues Projekt
   const [newProject, setNewProject] = useState({
     name: '',
@@ -98,8 +52,9 @@ const Projects = ({ clients }) => {
     if (newProject.name && newProject.clientId && newProject.deadline) {
       const selectedClient = clientList.find(c => c.id === parseInt(newProject.clientId))
       const project = {
-        id: projects.length + 1,
+        id: Math.max(...projects.map(p => p.id), 0) + 1,
         ...newProject,
+        clientId: parseInt(newProject.clientId),
         client: selectedClient?.name || 'Unbekannt',
         progress: 0,
         createdDate: new Date().toISOString().split('T')[0],
