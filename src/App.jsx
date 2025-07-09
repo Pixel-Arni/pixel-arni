@@ -4,10 +4,12 @@ import Dashboard from './pages/Dashboard'
 import Clients from './pages/Clients'
 import Projects from './pages/Projects'
 import Invoices from './pages/Invoices'
+import ProfessionalEditor from './pages/ProfessionalEditor'
 
 function App() {
   // State für die aktuelle Seite
   const [currentPage, setCurrentPage] = useState('dashboard')
+  const [isEditorMode, setIsEditorMode] = useState(false)
 
   // Globaler State für Kunden (wird zwischen Seiten geteilt)
   const [clients, setClients] = useState([
@@ -86,38 +88,52 @@ function App() {
     }
   ])
 
+  // Editor öffnen
+  const openEditor = () => {
+    setIsEditorMode(true)
+  }
+
+  // Editor schließen
+  const closeEditor = () => {
+    setIsEditorMode(false)
+  }
+
   // Funktion um die richtige Seite zu zeigen
   const renderPage = () => {
     switch (currentPage) {
       case 'dashboard':
-        return <Dashboard clients={clients} projects={projects} />
+        return <Dashboard clients={clients} projects={projects} onOpenEditor={openEditor} />
       case 'clients':
         return <Clients clients={clients} setClients={setClients} />
       case 'projects':
-        return <Projects clients={clients} projects={projects} setProjects={setProjects} />
+        return <Projects clients={clients} projects={projects} setProjects={setProjects} onOpenEditor={openEditor} />
       case 'invoices':
         return <Invoices clients={clients} projects={projects} />
       case 'editor':
-        return (
-          <div>
-            <h1 className="mb-6 text-3xl font-bold">Editor</h1>
-            <div className="p-8 text-center bg-gray-800 rounded-lg">
-              <p className="text-gray-400">Editor wird in Phase 3 implementiert</p>
-            </div>
-          </div>
-        )
+        return openEditor()
       case 'templates':
         return (
           <div>
             <h1 className="mb-6 text-3xl font-bold">Templates</h1>
             <div className="p-8 text-center bg-gray-800 rounded-lg">
-              <p className="text-gray-400">Templates werden in Phase 4 implementiert</p>
+              <p className="text-gray-400">Templates sind jetzt im Editor verfügbar!</p>
+              <button
+                onClick={openEditor}
+                className="px-6 py-2 mt-4 text-white bg-blue-600 rounded-lg hover:bg-blue-700"
+              >
+                Editor öffnen
+              </button>
             </div>
           </div>
         )
       default:
-        return <Dashboard clients={clients} projects={projects} />
+        return <Dashboard clients={clients} projects={projects} onOpenEditor={openEditor} />
     }
+  }
+
+  // Wenn Editor-Modus aktiv ist, zeige nur den Editor
+  if (isEditorMode) {
+    return <ProfessionalEditor onExit={closeEditor} />
   }
 
   return (
