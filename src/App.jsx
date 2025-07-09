@@ -2,27 +2,52 @@ import React, { useState } from 'react'
 import Layout from './components/Layout'
 import Dashboard from './pages/Dashboard'
 import Clients from './pages/Clients'
+import Projects from './pages/Projects'
 
 function App() {
   // State für die aktuelle Seite
   const [currentPage, setCurrentPage] = useState('dashboard')
 
+  // Globaler State für Kunden (wird zwischen Seiten geteilt)
+  const [clients, setClients] = useState([
+    {
+      id: 1,
+      name: "Max Mustermann",
+      email: "max@example.com",
+      phone: "+49 123 456789",
+      company: "Mustermann GmbH",
+      status: "Aktiv",
+      createdDate: "2024-01-15"
+    },
+    {
+      id: 2,
+      name: "Anna Schmidt",
+      email: "anna@restaurant.de",
+      phone: "+49 987 654321",
+      company: "Restaurant Schmidt",
+      status: "Aktiv",
+      createdDate: "2024-02-20"
+    },
+    {
+      id: 3,
+      name: "Tech Startup",
+      email: "info@techstartup.com",
+      phone: "+49 555 123456",
+      company: "TechStart Solutions",
+      status: "Inaktiv",
+      createdDate: "2024-03-10"
+    }
+  ])
+
   // Funktion um die richtige Seite zu zeigen
   const renderPage = () => {
     switch (currentPage) {
       case 'dashboard':
-        return <Dashboard />
+        return <Dashboard clients={clients} />
       case 'clients':
-        return <Clients />
+        return <Clients clients={clients} setClients={setClients} />
       case 'projects':
-        return (
-          <div>
-            <h1 className="mb-6 text-3xl font-bold">Projekte</h1>
-            <div className="p-8 text-center bg-gray-800 rounded-lg">
-              <p className="text-gray-400">Projekte-Seite wird in Phase 2.2 implementiert</p>
-            </div>
-          </div>
-        )
+        return <Projects clients={clients} />
       case 'editor':
         return (
           <div>
@@ -51,7 +76,7 @@ function App() {
           </div>
         )
       default:
-        return <Dashboard />
+        return <Dashboard clients={clients} />
     }
   }
 

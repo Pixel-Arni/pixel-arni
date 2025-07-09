@@ -1,37 +1,6 @@
 import React, { useState } from 'react'
 
-const Clients = () => {
-  // State für Clients verwalten
-  const [clients, setClients] = useState([
-    {
-      id: 1,
-      name: "Max Mustermann",
-      email: "max@example.com",
-      phone: "+49 123 456789",
-      company: "Mustermann GmbH",
-      status: "Aktiv",
-      createdDate: "2024-01-15"
-    },
-    {
-      id: 2,
-      name: "Anna Schmidt",
-      email: "anna@restaurant.de",
-      phone: "+49 987 654321",
-      company: "Restaurant Schmidt",
-      status: "Aktiv",
-      createdDate: "2024-02-20"
-    },
-    {
-      id: 3,
-      name: "Tech Startup",
-      email: "info@techstartup.com",
-      phone: "+49 555 123456",
-      company: "TechStart Solutions",
-      status: "Inaktiv",
-      createdDate: "2024-03-10"
-    }
-  ])
-
+const Clients = ({ clients, setClients }) => {
   // State für neuen Client
   const [newClient, setNewClient] = useState({
     name: '',
@@ -47,7 +16,7 @@ const Clients = () => {
   const addClient = () => {
     if (newClient.name && newClient.email) {
       const client = {
-        id: clients.length + 1,
+        id: Math.max(...clients.map(c => c.id), 0) + 1,
         ...newClient,
         status: "Aktiv",
         createdDate: new Date().toISOString().split('T')[0]
