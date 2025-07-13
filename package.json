@@ -15,11 +15,15 @@
     "electron": "electron .",
     "electron-dev": "concurrently \"npm run dev\" \"wait-on http://localhost:5173 && electron .\"",
     "build-electron": "npm run build && electron .",
-    "dist": "npm run build && electron-builder"
+    "dist": "npm run build && electron-builder",
+    "server": "node server/index.js"
   },
   "dependencies": {
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "express": "^4.18.2",
+    "@prisma/client": "^5.12.0",
+    "sqlite3": "^5.1.6"
   },
   "devDependencies": {
     "@types/react": "^18.2.66",
@@ -35,6 +39,7 @@
     "postcss": "^8.5.6",
     "tailwindcss": "^4.1.11",
     "vite": "^5.2.0",
-    "wait-on": "^7.2.0"
+    "wait-on": "^7.2.0",
+    "prisma": "^5.12.0"
   }
 }
