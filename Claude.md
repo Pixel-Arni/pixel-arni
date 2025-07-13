@@ -93,7 +93,7 @@ Eine lokale Desktop-Anwendung für Agenturen und Freelancer zur professionellen 
    - Prisma für Datenbank-ORM
 
 3. **Electron-Konfiguration**:
-   - Port-Konflikt (5173 vs 5174 in electron.cjs)
+   - Port-Konflikt behoben – electron.cjs nutzt jetzt 5173
    - Fehlende IPC-Kommunikation zwischen Main und Renderer
 
 4. **Fehlende Funktionalitäten**:
