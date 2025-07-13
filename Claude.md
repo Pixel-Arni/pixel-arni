@@ -1,107 +1,138 @@
-Pixel Arni - Projektbeschreibung
-🎯 Projektziel
+# Pixel Arni - Projektdokumentation
+
+## 🎯 Projektziel
 Eine lokale Desktop-Anwendung für Agenturen und Freelancer zur professionellen Erstellung von Landingpages mit intuitivem Visual Builder und vollständigem ZIP-Export.
-🛠️ Tech-Stack
 
-Frontend: Electron + React + Tailwind CSS
-Backend: Node.js + SQLite + Prisma
-Build: Vite
-Zusätzlich: React DND, Zustand, Archiver
+## 🛠️ Tech-Stack
 
-📋 Kern-Features
+- **Frontend**: Electron + React + Tailwind CSS ✅
+- **Backend**: Node.js + SQLite + Prisma ❌ (noch nicht implementiert)
+- **Build**: Vite ✅
+- **Zusätzlich geplant**: React DND ❌, Zustand ❌, Archiver ❌
 
-Kundenverwaltung - CRM-System
-Visual Builder - Drag & Drop Interface
-KI-Integration - OpenAI, Claude, Ollama
-Responsive Design - Auto-Optimierung
-ZIP-Export - HTML/CSS/JS Pakete
-Template-System - Wiederverwendbare Layouts
-Rechnungsstellung - Integrierte Abrechnung
-Lokale Datenbank - Datenschutz-konform
+## 📋 Kern-Features
 
+- ✅ **Kundenverwaltung** - Basis-CRM implementiert
+- ✅ **Visual Builder** - Grundlegendes Drag & Drop Interface vorhanden
+- ❌ **KI-Integration** - OpenAI, Claude, Ollama (noch nicht implementiert)
+- ✅ **Responsive Design** - Basis-Responsive-Preview vorhanden
+- ❌ **ZIP-Export** - HTML/CSS/JS Pakete (noch nicht implementiert)
+- ✅ **Template-System** - Basis-Template-Komponente vorhanden
+- ✅ **Rechnungsstellung** - Basis-Rechnungsverwaltung implementiert
+- ❌ **Lokale Datenbank** - SQLite/Prisma (noch nicht implementiert)
 
-📝 Schritt-für-Schritt Arbeitsliste
-Phase 1: Projekt-Setup & Grundstruktur
+## 📊 Aktueller Projektstand
 
- 1.1 GitHub Repository erstellen
- 1.2 Entwicklungsumgebung einrichten (Node.js, VS Code)
- 1.3 Electron + React + Vite Basis-Setup
- 1.4 Grundlegende Projektstruktur anlegen
- 1.5 Erste einfache Electron-App zum Laufen bringen
+### ✅ Was bereits implementiert ist:
 
-Phase 2: Datenbank & Backend
+#### Phase 1: Projekt-Setup & Grundstruktur
+- ✅ 1.1 GitHub Repository (nehme ich an)
+- ✅ 1.2 Entwicklungsumgebung (Node.js, VS Code)
+- ✅ 1.3 Electron + React + Vite Basis-Setup
+- ✅ 1.4 Grundlegende Projektstruktur
+- ✅ 1.5 Electron-App läuft
 
- 2.1 SQLite + Prisma Setup
- 2.2 Datenbank-Schema design (Kunden, Projekte, Templates)
- 2.3 Basis CRUD-Operationen implementieren
- 2.4 API-Routen für Frontend erstellen
+#### Phase 3: Grundlegendes UI (teilweise)
+- ✅ 3.1 Tailwind CSS integriert
+- ✅ 3.2 Basis-Layout mit Navigation
+- ✅ 3.3 Kundenverwaltung UI (Liste, Hinzufügen, Bearbeiten)
+- ✅ 3.4 Projektverwaltung UI
 
-Phase 3: Grundlegendes UI
+#### Phase 4: Visual Builder Grundlagen (teilweise)
+- ❌ 4.1 React DND Setup (noch nicht implementiert)
+- ✅ 4.2 Basis-Komponenten (Text, Bild, Button, etc.)
+- ✅ 4.3 Drag & Drop Canvas (ohne React DND)
+- ✅ 4.4 Live-Vorschau implementiert
 
- 3.1 Tailwind CSS integrieren
- 3.2 Basis-Layout mit Navigation
- 3.3 Kundenverwaltung UI (Liste, Hinzufügen, Bearbeiten)
- 3.4 Projektverwaltung UI
+### 🚧 Aktuelle Implementierungen:
 
-Phase 4: Visual Builder Grundlagen
+1. **App-Struktur**:
+   - `electron.cjs` - Electron-Hauptprozess
+   - `src/App.jsx` - Haupt-React-Komponente mit State-Management
+   - `src/components/Layout.jsx` - Sidebar-Navigation
+   - `src/pages/*` - Verschiedene Seiten (Dashboard, Clients, Projects, Invoices, ProfessionalEditor)
 
- 4.1 React DND Setup
- 4.2 Basis-Komponenten (Text, Bild, Button)
- 4.3 Drag & Drop Canvas
- 4.4 Live-Vorschau implementieren
+2. **Features**:
+   - Kundenverwaltung mit CRUD-Funktionen (nur im State)
+   - Projektverwaltung mit Status-Tracking
+   - Professional Editor mit Drag & Drop (ohne React DND)
+   - Template-System (Basis-Komponenten)
+   - Rechnungsverwaltung (Basis)
 
-Phase 5: Visual Builder erweitern
+### ❌ Was noch fehlt:
 
- 5.1 Weitere Komponenten hinzufügen
- 5.2 Styling-Optionen (Farben, Fonts, Abstände)
- 5.3 Responsive Breakpoints
- 5.4 Komponenten-Eigenschaften Panel
+#### Phase 2: Datenbank & Backend (komplett)
+- ❌ 2.1 SQLite + Prisma Setup
+- ❌ 2.2 Datenbank-Schema design
+- ❌ 2.3 CRUD-Operationen mit Datenbank
+- ❌ 2.4 API-Routen
 
-Phase 6: Template-System
+#### Phase 5: Visual Builder erweitern
+- ⚠️ 5.1 Weitere Komponenten (teilweise vorhanden)
+- ⚠️ 5.2 Styling-Optionen (Basis vorhanden)
+- ✅ 5.3 Responsive Breakpoints (Basis vorhanden)
+- ⚠️ 5.4 Komponenten-Eigenschaften Panel (Basis vorhanden)
 
- 6.1 Template-Speicherung in Datenbank
- 6.2 Template-Galerie UI
- 6.3 Template Import/Export
- 6.4 Vorgefertigte Templates erstellen
+#### Phase 6-10: Noch nicht begonnen
+- Template-Speicherung in DB
+- Export-Funktionalität
+- KI-Integration
+- Erweiterte Rechnungsstellung
+- Build & Deployment
 
-Phase 7: Export-Funktionalität
+## 🔴 Identifizierte Probleme:
 
- 7.1 HTML/CSS/JS Generator
- 7.2 ZIP-Paket Erstellung
- 7.3 Asset-Management (Bilder, Fonts)
- 7.4 Optimierung für Production
+1. **Keine Datenpersistenz**: 
+   - Alle Daten werden nur im React State gespeichert
+   - Beim Neustart der App gehen alle Daten verloren
 
-Phase 8: KI-Integration
+2. **Fehlende Bibliotheken**:
+   - React DND für professionelles Drag & Drop
+   - Zustand für besseres State Management
+   - Archiver für ZIP-Export
+   - Prisma für Datenbank-ORM
 
- 8.1 OpenAI API Integration
- 8.2 Claude API Integration
- 8.3 Ollama Integration
- 8.4 KI-assistierte Content-Generierung
+3. **Electron-Konfiguration**:
+   - Port-Konflikt (5173 vs 5174 in electron.cjs)
+   - Fehlende IPC-Kommunikation zwischen Main und Renderer
 
-Phase 9: Rechnungsstellung
+4. **Fehlende Funktionalitäten**:
+   - Kein echter Export von Landing Pages
+   - Keine Speicherung von Templates
+   - Keine Bilderverwaltung
+   - Keine echte Rechnungserstellung (PDF)
 
- 9.1 Rechnungs-Datenmodell
- 9.2 PDF-Generierung
- 9.3 Rechnungsübersicht
- 9.4 Export-Funktionen
+## 📝 Nächste empfohlene Schritte:
 
-Phase 10: Polish & Deployment
+### Priorität 1: Datenpersistenz
+1. SQLite + Prisma einrichten
+2. Datenbank-Schema erstellen
+3. IPC-Kommunikation implementieren
+4. CRUD-Operationen mit DB verbinden
 
- 10.1 App-Icons und Branding
- 10.2 Build-Optimierung
- 10.3 Installer erstellen
- 10.4 Testing und Bug-Fixes
+### Priorität 2: Editor verbessern
+1. React DND integrieren
+2. Mehr Komponenten hinzufügen
+3. Erweiterte Styling-Optionen
+4. Komponenten-Verschachtelung
 
+### Priorität 3: Export-Funktion
+1. HTML/CSS Generator implementieren
+2. Archiver-Bibliothek einbinden
+3. Asset-Management
+4. Download-Funktion
 
-📊 Aktueller Status
-Phase: 1.1 - GitHub Repository Setup
-Nächster Schritt: GitHub Repository erstellen
+## 💬 Kommunikationshinweis
 
-💬 Für jede Unterhaltung
-Bitte teile mir mit:
+Bei jeder Unterhaltung bitte angeben:
+- **Aktueller Schritt**: z.B. "2.1 - SQLite Setup"
+- **Problem/Frage**: Was brauchst du Hilfe dabei?
+- **Bereits versucht**: Was hast du schon probiert?
+- **Fehler**: Genaue Fehlermeldungen
 
-Aktueller Schritt: z.B. "1.3 - Electron Setup"
-Problem/Frage: Was brauchst du Hilfe dabei?
-Bereits gemacht: Was hast du schon geschafft?
+## 🎯 Aktueller Status
+**Phase**: 1 ✅ und 3-4 teilweise ✅  
+**Nächster wichtiger Schritt**: Phase 2.1 - SQLite + Prisma Setup für Datenpersistenz
 
-Bereit für Schritt 1.1? Soll ich dir beim GitHub Repository Setup helfen?
+---
+*Zuletzt aktualisiert: Basierend auf Projektanalyse*
