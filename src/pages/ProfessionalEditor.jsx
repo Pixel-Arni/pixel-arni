@@ -316,31 +316,6 @@ const ProfessionalEditor = ({ onExit }) => {
     )
   }
 
-  const DraggableComponent = ({ component }) => {
-    const [{ isDragging }, drag] = useDrag({
-      type: 'component',
-      item: { type: component.type },
-      collect: (monitor) => ({
-        isDragging: monitor.isDragging()
-      })
-    })
-
-    return (
-      <div
-        ref={drag}
-        className={`p-4 transition-all bg-white border border-gray-200 rounded-lg cursor-move hover:shadow-md hover:border-blue-300 ${
-          isDragging ? 'opacity-50 transform scale-95' : ''
-        }`}
-      >
-        <div className="flex items-center mb-2">
-          <span className="mr-3 text-2xl">{component.icon}</span>
-          <span className="font-semibold text-gray-900">{component.name}</span>
-        </div>
-        <p className="text-xs leading-relaxed text-gray-600">{component.description}</p>
-      </div>
-    )
-  }
-
   // Element-Aktionen
   const selectElement = (elementId) => {
     setSelectedElement(elementId)
@@ -703,6 +678,32 @@ const ElementsPanel = ({ categories }) => {
           />
         ))}
       </div>
+    </div>
+  )
+}
+
+// DraggableComponent - MUSS HIER STEHEN (außerhalb von ProfessionalEditor)
+const DraggableComponent = ({ component }) => {
+  const [{ isDragging }, drag] = useDrag({
+    type: 'component',
+    item: { type: component.type },
+    collect: (monitor) => ({
+      isDragging: monitor.isDragging()
+    })
+  })
+
+  return (
+    <div
+      ref={drag}
+      className={`p-4 transition-all bg-white border border-gray-200 rounded-lg cursor-move hover:shadow-md hover:border-blue-300 ${
+        isDragging ? 'opacity-50 transform scale-95' : ''
+      }`}
+    >
+      <div className="flex items-center mb-2">
+        <span className="mr-3 text-2xl">{component.icon}</span>
+        <span className="font-semibold text-gray-900">{component.name}</span>
+      </div>
+      <p className="text-xs leading-relaxed text-gray-600">{component.description}</p>
     </div>
   )
 }
