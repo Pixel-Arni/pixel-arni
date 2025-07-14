@@ -90,16 +90,16 @@ const Invoices = ({ clients, projects }) => {
   const clientList = clients || defaultClients
   const projectList = projects || defaultProjects
 
-  // Status-Farben
-  const getStatusColor = (status) => {
+  // Status-Badge-Klassen
+  const getStatusBadge = (status) => {
     switch (status) {
-      case 'Entwurf': return 'bg-gray-600'
-      case 'Versendet': return 'bg-blue-600'
-      case 'Offen': return 'bg-yellow-600'
-      case 'Bezahlt': return 'bg-green-600'
-      case 'Überfällig': return 'bg-red-600'
-      case 'Storniert': return 'bg-gray-500'
-      default: return 'bg-gray-600'
+      case 'Entwurf': return 'badge'
+      case 'Versendet': return 'badge-active'
+      case 'Offen': return 'badge-review'
+      case 'Bezahlt': return 'badge-active'
+      case 'Überfällig': return 'badge-danger'
+      case 'Storniert': return 'badge'
+      default: return 'badge'
     }
   }
 
@@ -197,147 +197,198 @@ const Invoices = ({ clients, projects }) => {
     return projectList.filter(project => project.clientId === parseInt(clientId))
   }
 
+  const stats = [
+    { label: 'Gesamt Rechnungen', value: invoices.length.toString() },
+    { label: 'Offene Rechnungen', value: invoices.filter(i => i.status === 'Offen').length.toString() },
+    { label: 'Überfällige', value: invoices.filter(i => i.status === 'Überfällig').length.toString() },
+    { label: 'Gesamt Umsatz', value: `€${invoices.filter(i => i.status === 'Bezahlt').reduce((sum, i) => sum + i.amount, 0).toLocaleString()}` }
+  ]
+
   return (
-    <div>
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-3xl font-bold">Rechnungen verwalten</h1>
-        <button
+    <div className="page-container">
+      {/* Header */}
+      <div className="page-header">
+        <div>
+          <h1 className="page-title">Rechnungen verwalten</h1>
+          <p className="page-description">Übersicht aller Rechnungen und deren Status</p>
+        </div>
+        <button 
+          className="btn btn-primary"
           onClick={() => setShowModal(true)}
-          className="px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700"
         >
           + Neue Rechnung
         </button>
       </div>
 
-      {/* Rechnungsstatistiken */}
-      <div className="grid grid-cols-1 gap-6 mb-8 md:grid-cols-4">
-        <div className="p-6 bg-gray-800 rounded-lg">
-          <h3 className="text-sm text-gray-400">Gesamt Rechnungen</h3>
-          <p className="text-2xl font-bold text-blue-400">{invoices.length}</p>
-        </div>
-        <div className="p-6 bg-gray-800 rounded-lg">
-          <h3 className="text-sm text-gray-400">Offene Rechnungen</h3>
-          <p className="text-2xl font-bold text-yellow-400">
-            {invoices.filter(i => i.status === 'Offen').length}
-          </p>
-        </div>
-        <div className="p-6 bg-gray-800 rounded-lg">
-          <h3 className="text-sm text-gray-400">Überfällige</h3>
-          <p className="text-2xl font-bold text-red-400">
-            {invoices.filter(i => i.status === 'Überfällig').length}
-          </p>
-        </div>
-        <div className="p-6 bg-gray-800 rounded-lg">
-          <h3 className="text-sm text-gray-400">Gesamt Umsatz</h3>
-          <p className="text-2xl font-bold text-green-400">
-            €{invoices.filter(i => i.status === 'Bezahlt').reduce((sum, i) => sum + i.amount, 0).toLocaleString()}
-          </p>
+      {/* Stats */}
+      <div className="section">
+        <div className="stats-grid">
+          {stats.map((stat, index) => (
+            <div key={index} className="card stat-card">
+              <div className="stat-number">{stat.value}</div>
+              <p className="stat-label">{stat.label}</p>
+            </div>
+          ))}
         </div>
       </div>
 
-      {/* Rechnungstabelle */}
-      <div className="overflow-hidden bg-gray-800 rounded-lg">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gray-700">
-              <tr>
-                <th className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-300 uppercase">
-                  Rechnungsnummer
-                </th>
-                <th className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-300 uppercase">
-                  Kunde
-                </th>
-                <th className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-300 uppercase">
-                  Projekt
-                </th>
-                <th className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-300 uppercase">
-                  Betrag
-                </th>
-                <th className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-300 uppercase">
-                  Status
-                </th>
-                <th className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-300 uppercase">
-                  Fälligkeitsdatum
-                </th>
-                <th className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-300 uppercase">
-                  Aktionen
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-700">
-              {invoices.map((invoice) => (
-                <tr key={invoice.id} className="hover:bg-gray-700">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-white">{invoice.invoiceNumber}</div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-300">{invoice.clientName}</div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-300">{invoice.projectName}</div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-white">€{invoice.amount.toLocaleString()}</div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`px-2 py-1 text-xs rounded-full text-white ${getStatusColor(invoice.status)}`}>
-                      {invoice.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-300 whitespace-nowrap">
-                    {invoice.dueDate}
-                  </td>
-                  <td className="px-6 py-4 text-sm whitespace-nowrap">
-                    <div className="flex space-x-2">
-                      <button
-                        onClick={() => setSelectedInvoice(invoice)}
-                        className="text-blue-400 hover:text-blue-300"
-                      >
-                        Details
-                      </button>
-                      <select
-                        value={invoice.status}
-                        onChange={(e) => updateInvoiceStatus(invoice.id, e.target.value)}
-                        className="px-2 py-1 text-xs text-white bg-gray-700 rounded"
-                      >
-                        <option value="Entwurf">Entwurf</option>
-                        <option value="Versendet">Versendet</option>
-                        <option value="Offen">Offen</option>
-                        <option value="Bezahlt">Bezahlt</option>
-                        <option value="Überfällig">Überfällig</option>
-                        <option value="Storniert">Storniert</option>
-                      </select>
-                      <button
-                        onClick={() => deleteInvoice(invoice.id)}
-                        className="text-red-400 hover:text-red-300"
-                      >
-                        Löschen
-                      </button>
-                    </div>
-                  </td>
+      {/* Invoices Table */}
+      <div className="section">
+        <div className="card" style={{ padding: '0', overflow: 'hidden' }}>
+          <div style={{ padding: '24px 24px 0 24px' }}>
+            <h2 className="section-title" style={{ margin: '0 0 24px 0' }}>Rechnungsübersicht</h2>
+          </div>
+          
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <thead>
+                <tr style={{ backgroundColor: 'var(--bg-tertiary)' }}>
+                  <th style={{ padding: '16px 24px', textAlign: 'left', fontSize: '14px', fontWeight: '600', color: 'var(--text-secondary)' }}>
+                    RECHNUNGSNUMMER
+                  </th>
+                  <th style={{ padding: '16px 24px', textAlign: 'left', fontSize: '14px', fontWeight: '600', color: 'var(--text-secondary)' }}>
+                    KUNDE
+                  </th>
+                  <th style={{ padding: '16px 24px', textAlign: 'left', fontSize: '14px', fontWeight: '600', color: 'var(--text-secondary)' }}>
+                    PROJEKT
+                  </th>
+                  <th style={{ padding: '16px 24px', textAlign: 'left', fontSize: '14px', fontWeight: '600', color: 'var(--text-secondary)' }}>
+                    BETRAG
+                  </th>
+                  <th style={{ padding: '16px 24px', textAlign: 'left', fontSize: '14px', fontWeight: '600', color: 'var(--text-secondary)' }}>
+                    STATUS
+                  </th>
+                  <th style={{ padding: '16px 24px', textAlign: 'left', fontSize: '14px', fontWeight: '600', color: 'var(--text-secondary)' }}>
+                    FÄLLIGKEITSDATUM
+                  </th>
+                  <th style={{ padding: '16px 24px', textAlign: 'left', fontSize: '14px', fontWeight: '600', color: 'var(--text-secondary)' }}>
+                    AKTIONEN
+                  </th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {invoices.map((invoice) => (
+                  <tr key={invoice.id} style={{ borderBottom: '1px solid var(--border)' }}>
+                    <td style={{ padding: '16px 24px' }}>
+                      <div style={{ fontSize: '14px', fontWeight: '600', color: 'var(--text-primary)' }}>
+                        {invoice.invoiceNumber}
+                      </div>
+                    </td>
+                    <td style={{ padding: '16px 24px', fontSize: '14px', color: 'var(--text-secondary)' }}>
+                      {invoice.clientName}
+                    </td>
+                    <td style={{ padding: '16px 24px', fontSize: '14px', color: 'var(--text-secondary)' }}>
+                      {invoice.projectName}
+                    </td>
+                    <td style={{ padding: '16px 24px' }}>
+                      <div style={{ fontSize: '14px', fontWeight: '600', color: 'var(--text-primary)' }}>
+                        €{invoice.amount.toLocaleString()}
+                      </div>
+                    </td>
+                    <td style={{ padding: '16px 24px' }}>
+                      <span className={`badge ${getStatusBadge(invoice.status)}`}>
+                        {invoice.status}
+                      </span>
+                    </td>
+                    <td style={{ padding: '16px 24px', fontSize: '14px', color: 'var(--text-secondary)' }}>
+                      {invoice.dueDate}
+                    </td>
+                    <td style={{ padding: '16px 24px' }}>
+                      <div style={{ display: 'flex', gap: '8px' }}>
+                        <button 
+                          className="btn btn-secondary" 
+                          style={{ fontSize: '12px', padding: '6px 12px' }}
+                          onClick={() => setSelectedInvoice(invoice)}
+                        >
+                          Details
+                        </button>
+                        <select
+                          value={invoice.status}
+                          onChange={(e) => updateInvoiceStatus(invoice.id, e.target.value)}
+                          style={{
+                            fontSize: '12px',
+                            padding: '6px 12px',
+                            backgroundColor: 'var(--bg-tertiary)',
+                            border: '1px solid var(--border)',
+                            borderRadius: '6px',
+                            color: 'var(--text-primary)'
+                          }}
+                        >
+                          <option value="Entwurf">Entwurf</option>
+                          <option value="Versendet">Versendet</option>
+                          <option value="Offen">Offen</option>
+                          <option value="Bezahlt">Bezahlt</option>
+                          <option value="Überfällig">Überfällig</option>
+                          <option value="Storniert">Storniert</option>
+                        </select>
+                        <button 
+                          className="btn" 
+                          style={{ 
+                            fontSize: '12px', 
+                            padding: '6px 12px',
+                            backgroundColor: '#ef4444',
+                            color: 'white'
+                          }}
+                          onClick={() => deleteInvoice(invoice.id)}
+                        >
+                          Löschen
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
 
       {/* Modal für neue Rechnung */}
       {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="bg-gray-800 p-6 rounded-lg w-full max-w-2xl max-h-[80vh] overflow-y-auto">
-            <h2 className="mb-4 text-xl font-bold">Neue Rechnung erstellen</h2>
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0,0,0,0.7)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000
+        }}>
+          <div style={{
+            backgroundColor: 'var(--bg-secondary)',
+            padding: '32px',
+            borderRadius: '8px',
+            width: '100%',
+            maxWidth: '800px',
+            maxHeight: '80vh',
+            overflowY: 'auto',
+            border: '1px solid var(--border)'
+          }}>
+            <h2 style={{ fontSize: '24px', fontWeight: 'bold', color: 'var(--text-primary)', margin: '0 0 24px 0' }}>
+              Neue Rechnung erstellen
+            </h2>
             
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                 <div>
-                  <label className="block mb-1 text-sm font-medium text-gray-300">
+                  <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '600', color: 'var(--text-primary)' }}>
                     Kunde *
                   </label>
                   <select
                     value={newInvoice.clientId}
                     onChange={(e) => setNewInvoice({...newInvoice, clientId: e.target.value, projectId: ''})}
-                    className="w-full px-3 py-2 text-white bg-gray-700 border border-gray-600 rounded-lg"
+                    style={{
+                      width: '100%',
+                      padding: '12px',
+                      backgroundColor: 'var(--bg-tertiary)',
+                      border: '1px solid var(--border)',
+                      borderRadius: '6px',
+                      color: 'var(--text-primary)',
+                      fontSize: '14px'
+                    }}
                   >
                     <option value="">Kunde auswählen</option>
                     {clientList.map(client => (
@@ -349,13 +400,21 @@ const Invoices = ({ clients, projects }) => {
                 </div>
                 
                 <div>
-                  <label className="block mb-1 text-sm font-medium text-gray-300">
+                  <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '600', color: 'var(--text-primary)' }}>
                     Projekt *
                   </label>
                   <select
                     value={newInvoice.projectId}
                     onChange={(e) => setNewInvoice({...newInvoice, projectId: e.target.value})}
-                    className="w-full px-3 py-2 text-white bg-gray-700 border border-gray-600 rounded-lg"
+                    style={{
+                      width: '100%',
+                      padding: '12px',
+                      backgroundColor: 'var(--bg-tertiary)',
+                      border: '1px solid var(--border)',
+                      borderRadius: '6px',
+                      color: 'var(--text-primary)',
+                      fontSize: '14px'
+                    }}
                     disabled={!newInvoice.clientId}
                   >
                     <option value="">Projekt auswählen</option>
@@ -369,107 +428,144 @@ const Invoices = ({ clients, projects }) => {
               </div>
               
               <div>
-                <label className="block mb-1 text-sm font-medium text-gray-300">
+                <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '600', color: 'var(--text-primary)' }}>
                   Fälligkeitsdatum *
                 </label>
                 <input
                   type="date"
                   value={newInvoice.dueDate}
                   onChange={(e) => setNewInvoice({...newInvoice, dueDate: e.target.value})}
-                  className="w-full px-3 py-2 text-white bg-gray-700 border border-gray-600 rounded-lg"
+                  style={{
+                    width: '100%',
+                    padding: '12px',
+                    backgroundColor: 'var(--bg-tertiary)',
+                    border: '1px solid var(--border)',
+                    borderRadius: '6px',
+                    color: 'var(--text-primary)',
+                    fontSize: '14px'
+                  }}
                 />
               </div>
               
               <div>
-                <label className="block mb-1 text-sm font-medium text-gray-300">
+                <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '600', color: 'var(--text-primary)' }}>
                   Beschreibung
                 </label>
                 <textarea
                   value={newInvoice.description}
                   onChange={(e) => setNewInvoice({...newInvoice, description: e.target.value})}
-                  className="w-full px-3 py-2 text-white bg-gray-700 border border-gray-600 rounded-lg"
-                  rows="2"
+                  style={{
+                    width: '100%',
+                    padding: '12px',
+                    backgroundColor: 'var(--bg-tertiary)',
+                    border: '1px solid var(--border)',
+                    borderRadius: '6px',
+                    color: 'var(--text-primary)',
+                    fontSize: '14px',
+                    resize: 'vertical',
+                    minHeight: '60px'
+                  }}
                   placeholder="Kurze Beschreibung der Rechnung..."
                 />
               </div>
               
               {/* Artikel */}
               <div>
-                <div className="flex items-center justify-between mb-2">
-                  <label className="block text-sm font-medium text-gray-300">
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                  <label style={{ fontSize: '14px', fontWeight: '600', color: 'var(--text-primary)' }}>
                     Artikel *
                   </label>
                   <button
                     onClick={addItem}
-                    className="px-3 py-1 text-sm text-white bg-green-600 rounded hover:bg-green-700"
+                    className="btn btn-primary"
+                    style={{ fontSize: '12px', padding: '6px 12px' }}
                   >
                     + Artikel hinzufügen
                   </button>
                 </div>
                 
                 {newInvoice.items.map((item, index) => (
-                  <div key={index} className="grid grid-cols-12 gap-2 mb-2">
-                    <div className="col-span-5">
-                      <input
-                        type="text"
-                        value={item.name}
-                        onChange={(e) => updateItem(index, 'name', e.target.value)}
-                        className="w-full px-3 py-2 text-white bg-gray-700 border border-gray-600 rounded-lg"
-                        placeholder="Artikel-Name"
-                      />
-                    </div>
-                    <div className="col-span-2">
-                      <input
-                        type="number"
-                        value={item.quantity}
-                        onChange={(e) => updateItem(index, 'quantity', parseInt(e.target.value))}
-                        className="w-full px-3 py-2 text-white bg-gray-700 border border-gray-600 rounded-lg"
-                        min="1"
-                      />
-                    </div>
-                    <div className="col-span-3">
-                      <input
-                        type="number"
-                        value={item.price}
-                        onChange={(e) => updateItem(index, 'price', parseFloat(e.target.value))}
-                        className="w-full px-3 py-2 text-white bg-gray-700 border border-gray-600 rounded-lg"
-                        step="0.01"
-                        min="0"
-                      />
-                    </div>
-                    <div className="col-span-1">
-                      <span className="text-sm text-gray-300">€{(item.quantity * item.price).toFixed(2)}</span>
-                    </div>
-                    <div className="col-span-1">
-                      <button
-                        onClick={() => removeItem(index)}
-                        className="text-red-400 hover:text-red-300"
-                        disabled={newInvoice.items.length === 1}
-                      >
-                        ✕
-                      </button>
-                    </div>
+                  <div key={index} style={{ display: 'grid', gridTemplateColumns: '5fr 2fr 3fr 1fr 1fr', gap: '8px', marginBottom: '8px', alignItems: 'center' }}>
+                    <input
+                      type="text"
+                      value={item.name}
+                      onChange={(e) => updateItem(index, 'name', e.target.value)}
+                      style={{
+                        padding: '8px',
+                        backgroundColor: 'var(--bg-tertiary)',
+                        border: '1px solid var(--border)',
+                        borderRadius: '4px',
+                        color: 'var(--text-primary)',
+                        fontSize: '14px'
+                      }}
+                      placeholder="Artikel-Name"
+                    />
+                    <input
+                      type="number"
+                      value={item.quantity}
+                      onChange={(e) => updateItem(index, 'quantity', parseInt(e.target.value) || 1)}
+                      style={{
+                        padding: '8px',
+                        backgroundColor: 'var(--bg-tertiary)',
+                        border: '1px solid var(--border)',
+                        borderRadius: '4px',
+                        color: 'var(--text-primary)',
+                        fontSize: '14px'
+                      }}
+                      min="1"
+                    />
+                    <input
+                      type="number"
+                      value={item.price}
+                      onChange={(e) => updateItem(index, 'price', parseFloat(e.target.value) || 0)}
+                      style={{
+                        padding: '8px',
+                        backgroundColor: 'var(--bg-tertiary)',
+                        border: '1px solid var(--border)',
+                        borderRadius: '4px',
+                        color: 'var(--text-primary)',
+                        fontSize: '14px'
+                      }}
+                      step="0.01"
+                      min="0"
+                    />
+                    <span style={{ fontSize: '14px', color: 'var(--text-secondary)', textAlign: 'right' }}>
+                      €{(item.quantity * item.price).toFixed(2)}
+                    </span>
+                    <button
+                      onClick={() => removeItem(index)}
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        color: '#ef4444',
+                        cursor: newInvoice.items.length === 1 ? 'not-allowed' : 'pointer',
+                        fontSize: '16px'
+                      }}
+                      disabled={newInvoice.items.length === 1}
+                    >
+                      ✕
+                    </button>
                   </div>
                 ))}
                 
-                <div className="mt-2 text-right">
-                  <span className="text-lg font-semibold text-white">
+                <div style={{ textAlign: 'right', marginTop: '16px', padding: '16px', backgroundColor: 'var(--bg-tertiary)', borderRadius: '6px' }}>
+                  <span style={{ fontSize: '18px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
                     Gesamt: €{calculateTotal(newInvoice.items).toFixed(2)}
                   </span>
                 </div>
               </div>
             </div>
             
-            <div className="flex justify-end mt-6 space-x-2">
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '24px' }}>
               <button
                 onClick={() => setShowModal(false)}
-                className="px-4 py-2 text-white bg-gray-600 rounded-lg hover:bg-gray-700"
+                className="btn btn-secondary"
               >
                 Abbrechen
               </button>
               <button
                 onClick={createInvoice}
-                className="px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700"
+                className="btn btn-primary"
               >
                 Rechnung erstellen
               </button>
@@ -480,58 +576,90 @@ const Invoices = ({ clients, projects }) => {
 
       {/* Rechnungsdetails Modal */}
       {selectedInvoice && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="bg-gray-800 p-6 rounded-lg w-full max-w-2xl max-h-[80vh] overflow-y-auto">
-            <div className="flex items-start justify-between mb-4">
-              <h2 className="text-xl font-bold">{selectedInvoice.invoiceNumber}</h2>
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0,0,0,0.7)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000
+        }}>
+          <div style={{
+            backgroundColor: 'var(--bg-secondary)',
+            padding: '32px',
+            borderRadius: '8px',
+            width: '100%',
+            maxWidth: '800px',
+            maxHeight: '80vh',
+            overflowY: 'auto',
+            border: '1px solid var(--border)'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '24px' }}>
+              <h2 style={{ fontSize: '24px', fontWeight: 'bold', color: 'var(--text-primary)', margin: '0' }}>
+                {selectedInvoice.invoiceNumber}
+              </h2>
               <button
                 onClick={() => setSelectedInvoice(null)}
-                className="text-gray-400 hover:text-white"
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: 'var(--text-secondary)',
+                  fontSize: '24px',
+                  cursor: 'pointer'
+                }}
               >
                 ✕
               </button>
             </div>
             
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
                 <div>
-                  <h3 className="mb-2 font-semibold text-gray-300">Rechnungsdetails</h3>
-                  <div className="space-y-2">
-                    <div className="flex justify-between">
-                      <span className="text-gray-400">Rechnungsnummer:</span>
-                      <span className="text-white">{selectedInvoice.invoiceNumber}</span>
+                  <h3 style={{ fontSize: '16px', fontWeight: '600', color: 'var(--text-primary)', marginBottom: '16px' }}>
+                    Rechnungsdetails
+                  </h3>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <span style={{ color: 'var(--text-secondary)' }}>Rechnungsnummer:</span>
+                      <span style={{ color: 'var(--text-primary)' }}>{selectedInvoice.invoiceNumber}</span>
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-400">Ausstellungsdatum:</span>
-                      <span className="text-white">{selectedInvoice.issueDate}</span>
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <span style={{ color: 'var(--text-secondary)' }}>Ausstellungsdatum:</span>
+                      <span style={{ color: 'var(--text-primary)' }}>{selectedInvoice.issueDate}</span>
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-400">Fälligkeitsdatum:</span>
-                      <span className="text-white">{selectedInvoice.dueDate}</span>
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <span style={{ color: 'var(--text-secondary)' }}>Fälligkeitsdatum:</span>
+                      <span style={{ color: 'var(--text-primary)' }}>{selectedInvoice.dueDate}</span>
                     </div>
                     {selectedInvoice.paymentDate && (
-                      <div className="flex justify-between">
-                        <span className="text-gray-400">Zahlungsdatum:</span>
-                        <span className="text-white">{selectedInvoice.paymentDate}</span>
+                      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <span style={{ color: 'var(--text-secondary)' }}>Zahlungsdatum:</span>
+                        <span style={{ color: 'var(--text-primary)' }}>{selectedInvoice.paymentDate}</span>
                       </div>
                     )}
                   </div>
                 </div>
                 
                 <div>
-                  <h3 className="mb-2 font-semibold text-gray-300">Kunde & Projekt</h3>
-                  <div className="space-y-2">
-                    <div className="flex justify-between">
-                      <span className="text-gray-400">Kunde:</span>
-                      <span className="text-white">{selectedInvoice.clientName}</span>
+                  <h3 style={{ fontSize: '16px', fontWeight: '600', color: 'var(--text-primary)', marginBottom: '16px' }}>
+                    Kunde & Projekt
+                  </h3>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <span style={{ color: 'var(--text-secondary)' }}>Kunde:</span>
+                      <span style={{ color: 'var(--text-primary)' }}>{selectedInvoice.clientName}</span>
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-400">Projekt:</span>
-                      <span className="text-white">{selectedInvoice.projectName}</span>
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <span style={{ color: 'var(--text-secondary)' }}>Projekt:</span>
+                      <span style={{ color: 'var(--text-primary)' }}>{selectedInvoice.projectName}</span>
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-400">Status:</span>
-                      <span className={`px-2 py-1 rounded-full text-xs text-white ${getStatusColor(selectedInvoice.status)}`}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <span style={{ color: 'var(--text-secondary)' }}>Status:</span>
+                      <span className={`badge ${getStatusBadge(selectedInvoice.status)}`}>
                         {selectedInvoice.status}
                       </span>
                     </div>
@@ -541,38 +669,57 @@ const Invoices = ({ clients, projects }) => {
               
               {selectedInvoice.description && (
                 <div>
-                  <h3 className="mb-2 font-semibold text-gray-300">Beschreibung</h3>
-                  <p className="text-sm text-gray-300">{selectedInvoice.description}</p>
+                  <h3 style={{ fontSize: '16px', fontWeight: '600', color: 'var(--text-primary)', marginBottom: '16px' }}>
+                    Beschreibung
+                  </h3>
+                  <p style={{ fontSize: '14px', color: 'var(--text-secondary)', lineHeight: '1.5' }}>
+                    {selectedInvoice.description}
+                  </p>
                 </div>
               )}
               
               <div>
-                <h3 className="mb-2 font-semibold text-gray-300">Artikel</h3>
-                <div className="p-4 bg-gray-700 rounded-lg">
+                <h3 style={{ fontSize: '16px', fontWeight: '600', color: 'var(--text-primary)', marginBottom: '16px' }}>
+                  Artikel
+                </h3>
+                <div style={{ padding: '16px', backgroundColor: 'var(--bg-tertiary)', borderRadius: '8px' }}>
                   {selectedInvoice.items.map((item, index) => (
-                    <div key={index} className="flex items-center justify-between py-2 border-b border-gray-600 last:border-b-0">
-                      <span className="text-white">{item.name}</span>
-                      <span className="text-gray-300">{item.quantity} × €{item.price.toFixed(2)}</span>
-                      <span className="font-medium text-white">€{(item.quantity * item.price).toFixed(2)}</span>
+                    <div key={index} style={{ 
+                      display: 'flex', 
+                      justifyContent: 'space-between', 
+                      alignItems: 'center', 
+                      padding: '8px 0', 
+                      borderBottom: index < selectedInvoice.items.length - 1 ? '1px solid var(--border)' : 'none' 
+                    }}>
+                      <span style={{ color: 'var(--text-primary)' }}>{item.name}</span>
+                      <span style={{ color: 'var(--text-secondary)' }}>{item.quantity} × €{item.price.toFixed(2)}</span>
+                      <span style={{ fontWeight: '600', color: 'var(--text-primary)' }}>€{(item.quantity * item.price).toFixed(2)}</span>
                     </div>
                   ))}
-                  <div className="flex items-center justify-between pt-2 mt-2 border-t border-gray-600">
-                    <span className="text-lg font-semibold text-white">Gesamt:</span>
-                    <span className="text-lg font-bold text-white">€{selectedInvoice.amount.toFixed(2)}</span>
+                  <div style={{ 
+                    display: 'flex', 
+                    justifyContent: 'space-between', 
+                    alignItems: 'center', 
+                    paddingTop: '16px', 
+                    marginTop: '16px', 
+                    borderTop: '1px solid var(--border)' 
+                  }}>
+                    <span style={{ fontSize: '18px', fontWeight: 'bold', color: 'var(--text-primary)' }}>Gesamt:</span>
+                    <span style={{ fontSize: '18px', fontWeight: 'bold', color: 'var(--text-primary)' }}>€{selectedInvoice.amount.toFixed(2)}</span>
                   </div>
                 </div>
               </div>
             </div>
             
-            <div className="flex justify-end mt-6 space-x-2">
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '24px' }}>
               <button
                 onClick={() => setSelectedInvoice(null)}
-                className="px-4 py-2 text-white bg-gray-600 rounded-lg hover:bg-gray-700"
+                className="btn btn-secondary"
               >
                 Schließen
               </button>
               <button
-                className="px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700"
+                className="btn btn-primary"
               >
                 Als PDF exportieren
               </button>

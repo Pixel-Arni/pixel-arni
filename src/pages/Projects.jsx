@@ -1,7 +1,6 @@
 import React, { useState } from 'react'
 
 const Projects = ({ clients, projects, setProjects }) => {
-  // State für neues Projekt
   const [newProject, setNewProject] = useState({
     name: '',
     clientId: '',
@@ -11,8 +10,6 @@ const Projects = ({ clients, projects, setProjects }) => {
     budget: '',
     description: ''
   })
-
-  // State für Modal
   const [showModal, setShowModal] = useState(false)
   const [selectedProject, setSelectedProject] = useState(null)
 
@@ -25,25 +22,25 @@ const Projects = ({ clients, projects, setProjects }) => {
 
   const clientList = clients || defaultClients
 
-  // Status-Farben
-  const getStatusColor = (status) => {
+  // Status-Badge-Klassen
+  const getStatusBadge = (status) => {
     switch (status) {
-      case 'Geplant': return 'bg-gray-600'
-      case 'In Arbeit': return 'bg-blue-600'
-      case 'Review': return 'bg-yellow-600'
-      case 'Fertig': return 'bg-green-600'
-      case 'Pausiert': return 'bg-red-600'
-      default: return 'bg-gray-600'
+      case 'Geplant': return 'badge'
+      case 'In Arbeit': return 'badge-active'
+      case 'Review': return 'badge-review'
+      case 'Fertig': return 'badge-active'
+      case 'Pausiert': return 'badge-danger'
+      default: return 'badge'
     }
   }
 
   // Prioritäts-Farben
   const getPriorityColor = (priority) => {
     switch (priority) {
-      case 'Hoch': return 'text-red-400'
-      case 'Mittel': return 'text-yellow-400'
-      case 'Niedrig': return 'text-green-400'
-      default: return 'text-gray-400'
+      case 'Hoch': return '#ef4444'
+      case 'Mittel': return 'var(--accent)'
+      case 'Niedrig': return '#22c55e'
+      default: return 'var(--text-secondary)'
     }
   }
 
@@ -93,151 +90,205 @@ const Projects = ({ clients, projects, setProjects }) => {
     setSelectedProject(project)
   }
 
+  const stats = [
+    { label: 'Gesamt Projekte', value: projects.length.toString() },
+    { label: 'In Arbeit', value: projects.filter(p => p.status === 'In Arbeit').length.toString() },
+    { label: 'Fertig', value: projects.filter(p => p.status === 'Fertig').length.toString() },
+    { label: 'Gesamt Budget', value: `€${projects.reduce((sum, p) => sum + (p.budget || 0), 0).toLocaleString()}` }
+  ]
+
   return (
-    <div>
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-3xl font-bold">Projekte verwalten</h1>
-        <button
+    <div className="page-container">
+      {/* Header */}
+      <div className="page-header">
+        <div>
+          <h1 className="page-title">Projekte verwalten</h1>
+          <p className="page-description">Übersicht aller Projekte und deren Status</p>
+        </div>
+        <button 
+          className="btn btn-primary"
           onClick={() => setShowModal(true)}
-          className="px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700"
         >
           + Neues Projekt
         </button>
       </div>
 
-      {/* Projekt-Statistiken */}
-      <div className="grid grid-cols-1 gap-6 mb-8 md:grid-cols-4">
-        <div className="p-6 bg-gray-800 rounded-lg">
-          <h3 className="text-sm text-gray-400">Gesamt Projekte</h3>
-          <p className="text-2xl font-bold text-blue-400">{projects.length}</p>
-        </div>
-        <div className="p-6 bg-gray-800 rounded-lg">
-          <h3 className="text-sm text-gray-400">In Arbeit</h3>
-          <p className="text-2xl font-bold text-yellow-400">
-            {projects.filter(p => p.status === 'In Arbeit').length}
-          </p>
-        </div>
-        <div className="p-6 bg-gray-800 rounded-lg">
-          <h3 className="text-sm text-gray-400">Fertig</h3>
-          <p className="text-2xl font-bold text-green-400">
-            {projects.filter(p => p.status === 'Fertig').length}
-          </p>
-        </div>
-        <div className="p-6 bg-gray-800 rounded-lg">
-          <h3 className="text-sm text-gray-400">Gesamt Budget</h3>
-          <p className="text-2xl font-bold text-purple-400">
-            €{projects.reduce((sum, p) => sum + (p.budget || 0), 0).toLocaleString()}
-          </p>
+      {/* Stats */}
+      <div className="section">
+        <div className="stats-grid">
+          {stats.map((stat, index) => (
+            <div key={index} className="card stat-card">
+              <div className="stat-number">{stat.value}</div>
+              <p className="stat-label">{stat.label}</p>
+            </div>
+          ))}
         </div>
       </div>
 
-      {/* Projekt-Grid */}
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {projects.map((project) => (
-          <div key={project.id} className="p-6 bg-gray-800 rounded-lg">
-            <div className="flex items-start justify-between mb-4">
-              <h3 className="text-lg font-semibold text-white">{project.name}</h3>
-              <span className={`px-2 py-1 text-xs rounded-full text-white ${getStatusColor(project.status)}`}>
-                {project.status}
-              </span>
-            </div>
-            
-            <div className="space-y-3">
-              <div className="flex justify-between">
-                <span className="text-gray-400">Kunde:</span>
-                <span className="text-white">{project.client}</span>
-              </div>
-              
-              <div className="flex justify-between">
-                <span className="text-gray-400">Priorität:</span>
-                <span className={`font-medium ${getPriorityColor(project.priority)}`}>
-                  {project.priority}
+      {/* Projects Grid */}
+      <div className="section">
+        <div className="projects-grid">
+          {projects.map((project) => (
+            <div key={project.id} className="card">
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
+                <h3 style={{ fontSize: '18px', fontWeight: '600', color: 'var(--text-primary)', margin: '0' }}>
+                  {project.name}
+                </h3>
+                <span className={getStatusBadge(project.status)}>
+                  {project.status}
                 </span>
               </div>
               
-              <div className="flex justify-between">
-                <span className="text-gray-400">Deadline:</span>
-                <span className="text-white">{project.deadline}</span>
-              </div>
-              
-              <div className="flex justify-between">
-                <span className="text-gray-400">Budget:</span>
-                <span className="text-white">€{project.budget?.toLocaleString()}</span>
-              </div>
-              
-              {/* Fortschrittsbalken */}
-              <div>
-                <div className="flex justify-between mb-1 text-sm">
-                  <span className="text-gray-400">Fortschritt</span>
-                  <span className="text-white">{project.progress}%</span>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '16px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ color: 'var(--text-secondary)' }}>Kunde:</span>
+                  <span style={{ color: 'var(--text-primary)' }}>{project.client}</span>
                 </div>
-                <div className="w-full h-2 bg-gray-700 rounded-full">
+                
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ color: 'var(--text-secondary)' }}>Priorität:</span>
+                  <span style={{ color: getPriorityColor(project.priority), fontWeight: '600' }}>
+                    {project.priority}
+                  </span>
+                </div>
+                
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ color: 'var(--text-secondary)' }}>Deadline:</span>
+                  <span style={{ color: 'var(--text-primary)' }}>{project.deadline}</span>
+                </div>
+                
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ color: 'var(--text-secondary)' }}>Budget:</span>
+                  <span style={{ color: 'var(--text-primary)' }}>€{project.budget?.toLocaleString()}</span>
+                </div>
+              </div>
+
+              {/* Fortschrittsbalken */}
+              <div className="progress-container">
+                <div className="progress-label">
+                  <span>Fortschritt</span>
+                  <span>{project.progress}%</span>
+                </div>
+                <div className="progress-bar">
                   <div 
-                    className="h-2 transition-all duration-300 bg-blue-600 rounded-full"
+                    className="progress-fill"
                     style={{ width: `${project.progress}%` }}
                   ></div>
                 </div>
               </div>
+              
+              {/* Aktionen */}
+              <div style={{ display: 'flex', gap: '8px', marginTop: '16px' }}>
+                <button
+                  onClick={() => showProjectDetails(project)}
+                  className="btn btn-primary"
+                  style={{ flex: '1', fontSize: '12px', padding: '8px 12px' }}
+                >
+                  Details
+                </button>
+                <select
+                  value={project.status}
+                  onChange={(e) => updateProjectStatus(project.id, e.target.value)}
+                  style={{
+                    flex: '1',
+                    fontSize: '12px',
+                    padding: '8px 12px',
+                    backgroundColor: 'var(--bg-tertiary)',
+                    border: '1px solid var(--border)',
+                    borderRadius: '6px',
+                    color: 'var(--text-primary)'
+                  }}
+                >
+                  <option value="Geplant">Geplant</option>
+                  <option value="In Arbeit">In Arbeit</option>
+                  <option value="Review">Review</option>
+                  <option value="Fertig">Fertig</option>
+                  <option value="Pausiert">Pausiert</option>
+                </select>
+                <button
+                  onClick={() => deleteProject(project.id)}
+                  className="btn"
+                  style={{
+                    fontSize: '12px',
+                    padding: '8px 12px',
+                    backgroundColor: '#ef4444',
+                    color: 'white'
+                  }}
+                >
+                  Löschen
+                </button>
+              </div>
             </div>
-            
-            {/* Aktionen */}
-            <div className="flex mt-4 space-x-2">
-              <button
-                onClick={() => showProjectDetails(project)}
-                className="flex-1 px-3 py-1 text-sm text-white bg-blue-600 rounded hover:bg-blue-700"
-              >
-                Details
-              </button>
-              <select
-                value={project.status}
-                onChange={(e) => updateProjectStatus(project.id, e.target.value)}
-                className="flex-1 px-2 py-1 text-sm text-white bg-gray-700 rounded"
-              >
-                <option value="Geplant">Geplant</option>
-                <option value="In Arbeit">In Arbeit</option>
-                <option value="Review">Review</option>
-                <option value="Fertig">Fertig</option>
-                <option value="Pausiert">Pausiert</option>
-              </select>
-              <button
-                onClick={() => deleteProject(project.id)}
-                className="px-3 py-1 text-sm text-white bg-red-600 rounded hover:bg-red-700"
-              >
-                Löschen
-              </button>
-            </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
 
       {/* Modal für neues Projekt */}
       {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="bg-gray-800 p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto">
-            <h2 className="mb-4 text-xl font-bold">Neues Projekt erstellen</h2>
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0,0,0,0.7)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000
+        }}>
+          <div style={{
+            backgroundColor: 'var(--bg-secondary)',
+            padding: '32px',
+            borderRadius: '8px',
+            width: '100%',
+            maxWidth: '500px',
+            maxHeight: '80vh',
+            overflowY: 'auto',
+            border: '1px solid var(--border)'
+          }}>
+            <h2 style={{ fontSize: '24px', fontWeight: 'bold', color: 'var(--text-primary)', margin: '0 0 24px 0' }}>
+              Neues Projekt erstellen
+            </h2>
             
-            <div className="space-y-4">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <div>
-                <label className="block mb-1 text-sm font-medium text-gray-300">
+                <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '600', color: 'var(--text-primary)' }}>
                   Projektname *
                 </label>
                 <input
                   type="text"
                   value={newProject.name}
                   onChange={(e) => setNewProject({...newProject, name: e.target.value})}
-                  className="w-full px-3 py-2 text-white bg-gray-700 border border-gray-600 rounded-lg"
+                  style={{
+                    width: '100%',
+                    padding: '12px',
+                    backgroundColor: 'var(--bg-tertiary)',
+                    border: '1px solid var(--border)',
+                    borderRadius: '6px',
+                    color: 'var(--text-primary)',
+                    fontSize: '14px'
+                  }}
                   placeholder="Landing Page für..."
                 />
               </div>
               
               <div>
-                <label className="block mb-1 text-sm font-medium text-gray-300">
+                <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '600', color: 'var(--text-primary)' }}>
                   Kunde *
                 </label>
                 <select
                   value={newProject.clientId}
                   onChange={(e) => setNewProject({...newProject, clientId: e.target.value})}
-                  className="w-full px-3 py-2 text-white bg-gray-700 border border-gray-600 rounded-lg"
+                  style={{
+                    width: '100%',
+                    padding: '12px',
+                    backgroundColor: 'var(--bg-tertiary)',
+                    border: '1px solid var(--border)',
+                    borderRadius: '6px',
+                    color: 'var(--text-primary)',
+                    fontSize: '14px'
+                  }}
                 >
                   <option value="">Kunde auswählen</option>
                   {clientList.map(client => (
@@ -248,15 +299,23 @@ const Projects = ({ clients, projects, setProjects }) => {
                 </select>
               </div>
               
-              <div className="grid grid-cols-2 gap-4">
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                 <div>
-                  <label className="block mb-1 text-sm font-medium text-gray-300">
+                  <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '600', color: 'var(--text-primary)' }}>
                     Status
                   </label>
                   <select
                     value={newProject.status}
                     onChange={(e) => setNewProject({...newProject, status: e.target.value})}
-                    className="w-full px-3 py-2 text-white bg-gray-700 border border-gray-600 rounded-lg"
+                    style={{
+                      width: '100%',
+                      padding: '12px',
+                      backgroundColor: 'var(--bg-tertiary)',
+                      border: '1px solid var(--border)',
+                      borderRadius: '6px',
+                      color: 'var(--text-primary)',
+                      fontSize: '14px'
+                    }}
                   >
                     <option value="Geplant">Geplant</option>
                     <option value="In Arbeit">In Arbeit</option>
@@ -267,13 +326,21 @@ const Projects = ({ clients, projects, setProjects }) => {
                 </div>
                 
                 <div>
-                  <label className="block mb-1 text-sm font-medium text-gray-300">
+                  <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '600', color: 'var(--text-primary)' }}>
                     Priorität
                   </label>
                   <select
                     value={newProject.priority}
                     onChange={(e) => setNewProject({...newProject, priority: e.target.value})}
-                    className="w-full px-3 py-2 text-white bg-gray-700 border border-gray-600 rounded-lg"
+                    style={{
+                      width: '100%',
+                      padding: '12px',
+                      backgroundColor: 'var(--bg-tertiary)',
+                      border: '1px solid var(--border)',
+                      borderRadius: '6px',
+                      color: 'var(--text-primary)',
+                      fontSize: '14px'
+                    }}
                   >
                     <option value="Niedrig">Niedrig</option>
                     <option value="Mittel">Mittel</option>
@@ -282,57 +349,82 @@ const Projects = ({ clients, projects, setProjects }) => {
                 </div>
               </div>
               
-              <div className="grid grid-cols-2 gap-4">
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                 <div>
-                  <label className="block mb-1 text-sm font-medium text-gray-300">
+                  <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '600', color: 'var(--text-primary)' }}>
                     Deadline *
                   </label>
                   <input
                     type="date"
                     value={newProject.deadline}
                     onChange={(e) => setNewProject({...newProject, deadline: e.target.value})}
-                    className="w-full px-3 py-2 text-white bg-gray-700 border border-gray-600 rounded-lg"
+                    style={{
+                      width: '100%',
+                      padding: '12px',
+                      backgroundColor: 'var(--bg-tertiary)',
+                      border: '1px solid var(--border)',
+                      borderRadius: '6px',
+                      color: 'var(--text-primary)',
+                      fontSize: '14px'
+                    }}
                   />
                 </div>
                 
                 <div>
-                  <label className="block mb-1 text-sm font-medium text-gray-300">
+                  <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '600', color: 'var(--text-primary)' }}>
                     Budget (€)
                   </label>
                   <input
                     type="number"
                     value={newProject.budget}
                     onChange={(e) => setNewProject({...newProject, budget: parseInt(e.target.value)})}
-                    className="w-full px-3 py-2 text-white bg-gray-700 border border-gray-600 rounded-lg"
+                    style={{
+                      width: '100%',
+                      padding: '12px',
+                      backgroundColor: 'var(--bg-tertiary)',
+                      border: '1px solid var(--border)',
+                      borderRadius: '6px',
+                      color: 'var(--text-primary)',
+                      fontSize: '14px'
+                    }}
                     placeholder="2500"
                   />
                 </div>
               </div>
               
               <div>
-                <label className="block mb-1 text-sm font-medium text-gray-300">
+                <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '600', color: 'var(--text-primary)' }}>
                   Beschreibung
                 </label>
                 <textarea
                   value={newProject.description}
                   onChange={(e) => setNewProject({...newProject, description: e.target.value})}
-                  className="w-full px-3 py-2 text-white bg-gray-700 border border-gray-600 rounded-lg"
-                  rows="3"
+                  style={{
+                    width: '100%',
+                    padding: '12px',
+                    backgroundColor: 'var(--bg-tertiary)',
+                    border: '1px solid var(--border)',
+                    borderRadius: '6px',
+                    color: 'var(--text-primary)',
+                    fontSize: '14px',
+                    resize: 'vertical',
+                    minHeight: '80px'
+                  }}
                   placeholder="Kurze Beschreibung des Projekts..."
                 />
               </div>
             </div>
             
-            <div className="flex justify-end mt-6 space-x-2">
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '24px' }}>
               <button
                 onClick={() => setShowModal(false)}
-                className="px-4 py-2 text-white bg-gray-600 rounded-lg hover:bg-gray-700"
+                className="btn btn-secondary"
               >
                 Abbrechen
               </button>
               <button
                 onClick={addProject}
-                className="px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700"
+                className="btn btn-primary"
               >
                 Erstellen
               </button>
@@ -343,83 +435,121 @@ const Projects = ({ clients, projects, setProjects }) => {
 
       {/* Projekt-Details Modal */}
       {selectedProject && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="bg-gray-800 p-6 rounded-lg w-full max-w-lg max-h-[80vh] overflow-y-auto">
-            <div className="flex items-start justify-between mb-4">
-              <h2 className="text-xl font-bold">{selectedProject.name}</h2>
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0,0,0,0.7)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000
+        }}>
+          <div style={{
+            backgroundColor: 'var(--bg-secondary)',
+            padding: '32px',
+            borderRadius: '8px',
+            width: '100%',
+            maxWidth: '600px',
+            maxHeight: '80vh',
+            overflowY: 'auto',
+            border: '1px solid var(--border)'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '24px' }}>
+              <h2 style={{ fontSize: '24px', fontWeight: 'bold', color: 'var(--text-primary)', margin: '0' }}>
+                {selectedProject.name}
+              </h2>
               <button
                 onClick={() => setSelectedProject(null)}
-                className="text-gray-400 hover:text-white"
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: 'var(--text-secondary)',
+                  fontSize: '24px',
+                  cursor: 'pointer'
+                }}
               >
                 ✕
               </button>
             </div>
             
-            <div className="space-y-4">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
               <div>
-                <h3 className="mb-2 font-semibold text-gray-300">Projektdetails</h3>
-                <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <span className="text-gray-400">Kunde:</span>
-                    <span className="text-white">{selectedProject.client}</span>
+                <h3 style={{ fontSize: '16px', fontWeight: '600', color: 'var(--text-primary)', marginBottom: '16px' }}>
+                  Projektdetails
+                </h3>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <span style={{ color: 'var(--text-secondary)' }}>Kunde:</span>
+                    <span style={{ color: 'var(--text-primary)' }}>{selectedProject.client}</span>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-400">Status:</span>
-                    <span className={`px-2 py-1 rounded-full text-xs text-white ${getStatusColor(selectedProject.status)}`}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <span style={{ color: 'var(--text-secondary)' }}>Status:</span>
+                    <span className={getStatusBadge(selectedProject.status)}>
                       {selectedProject.status}
                     </span>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-400">Priorität:</span>
-                    <span className={`font-medium ${getPriorityColor(selectedProject.priority)}`}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <span style={{ color: 'var(--text-secondary)' }}>Priorität:</span>
+                    <span style={{ color: getPriorityColor(selectedProject.priority), fontWeight: '600' }}>
                       {selectedProject.priority}
                     </span>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-400">Deadline:</span>
-                    <span className="text-white">{selectedProject.deadline}</span>
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <span style={{ color: 'var(--text-secondary)' }}>Deadline:</span>
+                    <span style={{ color: 'var(--text-primary)' }}>{selectedProject.deadline}</span>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-400">Budget:</span>
-                    <span className="text-white">€{selectedProject.budget?.toLocaleString()}</span>
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <span style={{ color: 'var(--text-secondary)' }}>Budget:</span>
+                    <span style={{ color: 'var(--text-primary)' }}>€{selectedProject.budget?.toLocaleString()}</span>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-400">Erstellt:</span>
-                    <span className="text-white">{selectedProject.createdDate}</span>
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <span style={{ color: 'var(--text-secondary)' }}>Erstellt:</span>
+                    <span style={{ color: 'var(--text-primary)' }}>{selectedProject.createdDate}</span>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-400">Aktualisiert:</span>
-                    <span className="text-white">{selectedProject.updatedDate}</span>
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <span style={{ color: 'var(--text-secondary)' }}>Aktualisiert:</span>
+                    <span style={{ color: 'var(--text-primary)' }}>{selectedProject.updatedDate}</span>
                   </div>
                 </div>
               </div>
               
               <div>
-                <h3 className="mb-2 font-semibold text-gray-300">Fortschritt</h3>
-                <div className="flex justify-between mb-1 text-sm">
-                  <span className="text-gray-400">Abgeschlossen</span>
-                  <span className="text-white">{selectedProject.progress}%</span>
-                </div>
-                <div className="w-full h-3 bg-gray-700 rounded-full">
-                  <div 
-                    className="h-3 transition-all duration-300 bg-blue-600 rounded-full"
-                    style={{ width: `${selectedProject.progress}%` }}
-                  ></div>
+                <h3 style={{ fontSize: '16px', fontWeight: '600', color: 'var(--text-primary)', marginBottom: '16px' }}>
+                  Fortschritt
+                </h3>
+                <div className="progress-container">
+                  <div className="progress-label">
+                    <span>Abgeschlossen</span>
+                    <span>{selectedProject.progress}%</span>
+                  </div>
+                  <div className="progress-bar" style={{ height: '12px' }}>
+                    <div 
+                      className="progress-fill"
+                      style={{ width: `${selectedProject.progress}%`, height: '12px' }}
+                    ></div>
+                  </div>
                 </div>
               </div>
               
               {selectedProject.description && (
                 <div>
-                  <h3 className="mb-2 font-semibold text-gray-300">Beschreibung</h3>
-                  <p className="text-sm text-gray-300">{selectedProject.description}</p>
+                  <h3 style={{ fontSize: '16px', fontWeight: '600', color: 'var(--text-primary)', marginBottom: '16px' }}>
+                    Beschreibung
+                  </h3>
+                  <p style={{ fontSize: '14px', color: 'var(--text-secondary)', lineHeight: '1.5' }}>
+                    {selectedProject.description}
+                  </p>
                 </div>
               )}
             </div>
             
-            <div className="flex justify-end mt-6">
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '24px' }}>
               <button
                 onClick={() => setSelectedProject(null)}
-                className="px-4 py-2 text-white bg-gray-600 rounded-lg hover:bg-gray-700"
+                className="btn btn-secondary"
               >
                 Schließen
               </button>

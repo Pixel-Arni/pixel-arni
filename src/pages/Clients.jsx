@@ -1,18 +1,16 @@
 import React, { useState } from 'react'
 
 const Clients = ({ clients, setClients }) => {
-  // State für neuen Client
   const [newClient, setNewClient] = useState({
     name: '',
     email: '',
     phone: '',
     company: ''
   })
-
-  // State für Modal (Popup zum Hinzufügen)
   const [showModal, setShowModal] = useState(false)
+  const [editingClient, setEditingClient] = useState(null)
+  const [showEditModal, setShowEditModal] = useState(false)
 
-  // Funktion zum Hinzufügen eines neuen Clients
   const addClient = () => {
     if (newClient.name && newClient.email) {
       const client = {
@@ -27,179 +25,403 @@ const Clients = ({ clients, setClients }) => {
     }
   }
 
-  // Funktion zum Löschen eines Clients
   const deleteClient = (id) => {
     setClients(clients.filter(client => client.id !== id))
   }
 
+  const startEditClient = (client) => {
+    setEditingClient({...client})
+    setShowEditModal(true)
+  }
+
+  const updateClient = () => {
+    if (editingClient.name && editingClient.email) {
+      setClients(clients.map(client => 
+        client.id === editingClient.id ? editingClient : client
+      ))
+      setEditingClient(null)
+      setShowEditModal(false)
+    }
+  }
+
+  const stats = [
+    { label: 'Gesamtkunden', value: clients.length.toString() },
+    { label: 'Aktive Kunden', value: clients.filter(c => c.status === 'Aktiv').length.toString() },
+    { label: 'Neue diese Woche', value: '2' }
+  ]
+
   return (
-    <div>
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-3xl font-bold">Kunden verwalten</h1>
-        <button
+    <div className="page-container">
+      {/* Header */}
+      <div className="page-header">
+        <div>
+          <h1 className="page-title">Kunden verwalten</h1>
+          <p className="page-description">Übersicht aller Kunden und deren Informationen</p>
+        </div>
+        <button 
+          className="btn btn-primary"
           onClick={() => setShowModal(true)}
-          className="px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700"
         >
           + Neuer Kunde
         </button>
       </div>
 
-      {/* Statistiken */}
-      <div className="grid grid-cols-1 gap-6 mb-8 md:grid-cols-3">
-        <div className="p-6 bg-gray-800 rounded-lg">
-          <h3 className="text-sm text-gray-400">Gesamtkunden</h3>
-          <p className="text-2xl font-bold text-blue-400">{clients.length}</p>
-        </div>
-        <div className="p-6 bg-gray-800 rounded-lg">
-          <h3 className="text-sm text-gray-400">Aktive Kunden</h3>
-          <p className="text-2xl font-bold text-green-400">
-            {clients.filter(c => c.status === 'Aktiv').length}
-          </p>
-        </div>
-        <div className="p-6 bg-gray-800 rounded-lg">
-          <h3 className="text-sm text-gray-400">Neue diese Woche</h3>
-          <p className="text-2xl font-bold text-purple-400">2</p>
+      {/* Stats */}
+      <div className="section">
+        <div className="stats-grid">
+          {stats.map((stat, index) => (
+            <div key={index} className="card stat-card">
+              <div className="stat-number">{stat.value}</div>
+              <p className="stat-label">{stat.label}</p>
+            </div>
+          ))}
         </div>
       </div>
 
-      {/* Kunden-Tabelle */}
-      <div className="overflow-hidden bg-gray-800 rounded-lg">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gray-700">
-              <tr>
-                <th className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-300 uppercase">
-                  Name
-                </th>
-                <th className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-300 uppercase">
-                  Unternehmen
-                </th>
-                <th className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-300 uppercase">
-                  Kontakt
-                </th>
-                <th className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-300 uppercase">
-                  Status
-                </th>
-                <th className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-300 uppercase">
-                  Erstellt
-                </th>
-                <th className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-300 uppercase">
-                  Aktionen
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-700">
-              {clients.map((client) => (
-                <tr key={client.id} className="hover:bg-gray-700">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-white">{client.name}</div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-300">{client.company}</div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-300">{client.email}</div>
-                    <div className="text-xs text-gray-400">{client.phone}</div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`px-2 py-1 text-xs rounded-full ${
-                      client.status === 'Aktiv' 
-                        ? 'bg-green-600 text-white' 
-                        : 'bg-gray-600 text-white'
-                    }`}>
-                      {client.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-300 whitespace-nowrap">
-                    {client.createdDate}
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-300 whitespace-nowrap">
-                    <button
-                      onClick={() => deleteClient(client.id)}
-                      className="ml-2 text-red-400 hover:text-red-300"
-                    >
-                      Löschen
-                    </button>
-                  </td>
+      {/* Clients Table */}
+      <div className="section">
+        <div className="card" style={{ padding: '0', overflow: 'hidden' }}>
+          <div style={{ padding: '24px 24px 0 24px' }}>
+            <h2 className="section-title" style={{ margin: '0 0 24px 0' }}>Kundenliste</h2>
+          </div>
+          
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <thead>
+                <tr style={{ backgroundColor: 'var(--bg-tertiary)' }}>
+                  <th style={{ padding: '16px 24px', textAlign: 'left', fontSize: '14px', fontWeight: '600', color: 'var(--text-secondary)' }}>
+                    NAME
+                  </th>
+                  <th style={{ padding: '16px 24px', textAlign: 'left', fontSize: '14px', fontWeight: '600', color: 'var(--text-secondary)' }}>
+                    UNTERNEHMEN
+                  </th>
+                  <th style={{ padding: '16px 24px', textAlign: 'left', fontSize: '14px', fontWeight: '600', color: 'var(--text-secondary)' }}>
+                    KONTAKT
+                  </th>
+                  <th style={{ padding: '16px 24px', textAlign: 'left', fontSize: '14px', fontWeight: '600', color: 'var(--text-secondary)' }}>
+                    STATUS
+                  </th>
+                  <th style={{ padding: '16px 24px', textAlign: 'left', fontSize: '14px', fontWeight: '600', color: 'var(--text-secondary)' }}>
+                    ERSTELLT
+                  </th>
+                  <th style={{ padding: '16px 24px', textAlign: 'left', fontSize: '14px', fontWeight: '600', color: 'var(--text-secondary)' }}>
+                    AKTIONEN
+                  </th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {clients.map((client, index) => (
+                  <tr key={index} style={{ borderBottom: '1px solid var(--border)' }}>
+                    <td style={{ padding: '16px 24px' }}>
+                      <div style={{ fontSize: '14px', fontWeight: '600', color: 'var(--text-primary)', marginBottom: '4px' }}>
+                        {client.name}
+                      </div>
+                    </td>
+                    <td style={{ padding: '16px 24px', fontSize: '14px', color: 'var(--text-secondary)' }}>
+                      {client.company}
+                    </td>
+                    <td style={{ padding: '16px 24px' }}>
+                      <div style={{ fontSize: '14px', color: 'var(--text-secondary)', marginBottom: '2px' }}>
+                        {client.email}
+                      </div>
+                      <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
+                        {client.phone}
+                      </div>
+                    </td>
+                    <td style={{ padding: '16px 24px' }}>
+                      <span className="badge badge-active">{client.status}</span>
+                    </td>
+                    <td style={{ padding: '16px 24px', fontSize: '14px', color: 'var(--text-secondary)' }}>
+                      {client.createdDate}
+                    </td>
+                    <td style={{ padding: '16px 24px' }}>
+                      <div style={{ display: 'flex', gap: '8px' }}>
+                        <button 
+                          className="btn btn-secondary" 
+                          style={{ fontSize: '12px', padding: '6px 12px' }}
+                          onClick={() => startEditClient(client)}
+                        >
+                          Bearbeiten
+                        </button>
+                        <button 
+                          className="btn" 
+                          style={{ 
+                            fontSize: '12px', 
+                            padding: '6px 12px',
+                            backgroundColor: '#ef4444',
+                            color: 'white'
+                          }}
+                          onClick={() => deleteClient(client.id)}
+                        >
+                          Löschen
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
 
       {/* Modal zum Hinzufügen neuer Kunden */}
       {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="w-full max-w-md p-6 bg-gray-800 rounded-lg">
-            <h2 className="mb-4 text-xl font-bold">Neuen Kunden hinzufügen</h2>
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0,0,0,0.7)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000
+        }}>
+          <div style={{
+            backgroundColor: 'var(--bg-secondary)',
+            padding: '32px',
+            borderRadius: '8px',
+            width: '100%',
+            maxWidth: '500px',
+            border: '1px solid var(--border)'
+          }}>
+            <h2 style={{ fontSize: '24px', fontWeight: 'bold', color: 'var(--text-primary)', margin: '0 0 24px 0' }}>
+              Neuen Kunden hinzufügen
+            </h2>
             
-            <div className="space-y-4">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <div>
-                <label className="block mb-1 text-sm font-medium text-gray-300">
+                <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '600', color: 'var(--text-primary)' }}>
                   Name *
                 </label>
                 <input
                   type="text"
                   value={newClient.name}
                   onChange={(e) => setNewClient({...newClient, name: e.target.value})}
-                  className="w-full px-3 py-2 text-white bg-gray-700 border border-gray-600 rounded-lg"
+                  style={{
+                    width: '100%',
+                    padding: '12px',
+                    backgroundColor: 'var(--bg-tertiary)',
+                    border: '1px solid var(--border)',
+                    borderRadius: '6px',
+                    color: 'var(--text-primary)',
+                    fontSize: '14px'
+                  }}
                   placeholder="Kundenname"
                 />
               </div>
               
               <div>
-                <label className="block mb-1 text-sm font-medium text-gray-300">
+                <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '600', color: 'var(--text-primary)' }}>
                   E-Mail *
                 </label>
                 <input
                   type="email"
                   value={newClient.email}
                   onChange={(e) => setNewClient({...newClient, email: e.target.value})}
-                  className="w-full px-3 py-2 text-white bg-gray-700 border border-gray-600 rounded-lg"
+                  style={{
+                    width: '100%',
+                    padding: '12px',
+                    backgroundColor: 'var(--bg-tertiary)',
+                    border: '1px solid var(--border)',
+                    borderRadius: '6px',
+                    color: 'var(--text-primary)',
+                    fontSize: '14px'
+                  }}
                   placeholder="kunde@example.com"
                 />
               </div>
               
               <div>
-                <label className="block mb-1 text-sm font-medium text-gray-300">
+                <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '600', color: 'var(--text-primary)' }}>
                   Telefon
                 </label>
                 <input
                   type="tel"
                   value={newClient.phone}
                   onChange={(e) => setNewClient({...newClient, phone: e.target.value})}
-                  className="w-full px-3 py-2 text-white bg-gray-700 border border-gray-600 rounded-lg"
+                  style={{
+                    width: '100%',
+                    padding: '12px',
+                    backgroundColor: 'var(--bg-tertiary)',
+                    border: '1px solid var(--border)',
+                    borderRadius: '6px',
+                    color: 'var(--text-primary)',
+                    fontSize: '14px'
+                  }}
                   placeholder="+49 123 456789"
                 />
               </div>
               
               <div>
-                <label className="block mb-1 text-sm font-medium text-gray-300">
+                <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '600', color: 'var(--text-primary)' }}>
                   Unternehmen
                 </label>
                 <input
                   type="text"
                   value={newClient.company}
                   onChange={(e) => setNewClient({...newClient, company: e.target.value})}
-                  className="w-full px-3 py-2 text-white bg-gray-700 border border-gray-600 rounded-lg"
+                  style={{
+                    width: '100%',
+                    padding: '12px',
+                    backgroundColor: 'var(--bg-tertiary)',
+                    border: '1px solid var(--border)',
+                    borderRadius: '6px',
+                    color: 'var(--text-primary)',
+                    fontSize: '14px'
+                  }}
                   placeholder="Firmenname"
                 />
               </div>
             </div>
             
-            <div className="flex justify-end mt-6 space-x-2">
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '24px' }}>
               <button
                 onClick={() => setShowModal(false)}
-                className="px-4 py-2 text-white bg-gray-600 rounded-lg hover:bg-gray-700"
+                className="btn btn-secondary"
               >
                 Abbrechen
               </button>
               <button
                 onClick={addClient}
-                className="px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700"
+                className="btn btn-primary"
               >
                 Hinzufügen
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal zum Bearbeiten von Kunden */}
+      {showEditModal && editingClient && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0,0,0,0.7)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000
+        }}>
+          <div style={{
+            backgroundColor: 'var(--bg-secondary)',
+            padding: '32px',
+            borderRadius: '8px',
+            width: '100%',
+            maxWidth: '500px',
+            border: '1px solid var(--border)'
+          }}>
+            <h2 style={{ fontSize: '24px', fontWeight: 'bold', color: 'var(--text-primary)', margin: '0 0 24px 0' }}>
+              Kunde bearbeiten
+            </h2>
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <div>
+                <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '600', color: 'var(--text-primary)' }}>
+                  Name *
+                </label>
+                <input
+                  type="text"
+                  value={editingClient.name}
+                  onChange={(e) => setEditingClient({...editingClient, name: e.target.value})}
+                  style={{
+                    width: '100%',
+                    padding: '12px',
+                    backgroundColor: 'var(--bg-tertiary)',
+                    border: '1px solid var(--border)',
+                    borderRadius: '6px',
+                    color: 'var(--text-primary)',
+                    fontSize: '14px'
+                  }}
+                  placeholder="Kundenname"
+                />
+              </div>
+              
+              <div>
+                <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '600', color: 'var(--text-primary)' }}>
+                  E-Mail *
+                </label>
+                <input
+                  type="email"
+                  value={editingClient.email}
+                  onChange={(e) => setEditingClient({...editingClient, email: e.target.value})}
+                  style={{
+                    width: '100%',
+                    padding: '12px',
+                    backgroundColor: 'var(--bg-tertiary)',
+                    border: '1px solid var(--border)',
+                    borderRadius: '6px',
+                    color: 'var(--text-primary)',
+                    fontSize: '14px'
+                  }}
+                  placeholder="kunde@example.com"
+                />
+              </div>
+              
+              <div>
+                <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '600', color: 'var(--text-primary)' }}>
+                  Telefon
+                </label>
+                <input
+                  type="tel"
+                  value={editingClient.phone}
+                  onChange={(e) => setEditingClient({...editingClient, phone: e.target.value})}
+                  style={{
+                    width: '100%',
+                    padding: '12px',
+                    backgroundColor: 'var(--bg-tertiary)',
+                    border: '1px solid var(--border)',
+                    borderRadius: '6px',
+                    color: 'var(--text-primary)',
+                    fontSize: '14px'
+                  }}
+                  placeholder="+49 123 456789"
+                />
+              </div>
+              
+              <div>
+                <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '600', color: 'var(--text-primary)' }}>
+                  Unternehmen
+                </label>
+                <input
+                  type="text"
+                  value={editingClient.company}
+                  onChange={(e) => setEditingClient({...editingClient, company: e.target.value})}
+                  style={{
+                    width: '100%',
+                    padding: '12px',
+                    backgroundColor: 'var(--bg-tertiary)',
+                    border: '1px solid var(--border)',
+                    borderRadius: '6px',
+                    color: 'var(--text-primary)',
+                    fontSize: '14px'
+                  }}
+                  placeholder="Firmenname"
+                />
+              </div>
+            </div>
+            
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '24px' }}>
+              <button
+                onClick={() => {
+                  setShowEditModal(false)
+                  setEditingClient(null)
+                }}
+                className="btn btn-secondary"
+              >
+                Abbrechen
+              </button>
+              <button
+                onClick={updateClient}
+                className="btn btn-primary"
+              >
+                Speichern
               </button>
             </div>
           </div>

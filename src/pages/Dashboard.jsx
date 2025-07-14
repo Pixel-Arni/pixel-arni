@@ -1,128 +1,164 @@
 import React from 'react'
 
-const Dashboard = ({ clients, projects, onOpenEditor }) => {
-  // Berechnungen für Statistiken
-  const totalClients = clients.length
-  const activeProjects = projects.filter(p => p.status === 'In Arbeit').length
-  const completedProjects = projects.filter(p => p.status === 'Fertig').length
-  const totalRevenue = projects.reduce((sum, p) => sum + p.budget, 0)
+const Dashboard = ({ setCurrentPage }) => {
+  const stats = [
+    { label: 'Gesamtkunden', value: '2' },
+    { label: 'Aktive Projekte', value: '1' },
+    { label: 'Abgeschlossene Projekte', value: '0' },
+    { label: 'Gesamtumsatz', value: '7.500€' }
+  ]
 
-  // Neueste Projekte
-  const recentProjects = projects.slice(0, 3)
+  const quickActions = [
+    {
+      title: 'Landing Page erstellen',
+      description: 'Neues Design im Editor',
+      action: () => setCurrentPage('editor')
+    },
+    {
+      title: 'Neuer Kunde',
+      description: 'Kunde hinzufügen',
+      action: () => setCurrentPage('clients')
+    },
+    {
+      title: 'Neues Projekt',
+      description: 'Projekt erstellen',
+      action: () => setCurrentPage('projects')
+    },
+    {
+      title: 'Rechnung erstellen',
+      description: 'Neue Rechnung',
+      action: () => setCurrentPage('invoices')
+    }
+  ]
+
+  const recentProjects = [
+    {
+      name: 'Website Relaunch',
+      client: 'Max Mustermann',
+      status: 'In Arbeit',
+      progress: 65,
+      budget: '5000€',
+      badgeClass: 'badge-active'
+    },
+    {
+      name: 'Landing Page Kampagne',
+      client: 'Anna Schmidt',
+      status: 'Review',
+      progress: 90,
+      budget: '2500€',
+      badgeClass: 'badge-review'
+    }
+  ]
 
   return (
-    <div className="space-y-6">
+    <div className="page-container">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold">Dashboard</h1>
-        <button
-          onClick={onOpenEditor}
-          className="px-6 py-3 font-medium text-white rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
-        >
-          🎨 Neues Design erstellen
-        </button>
+      <div className="page-header">
+        <h1 className="page-title">Dashboard</h1>
+        <p className="page-description">Willkommen zurück! Hier ist dein Überblick.</p>
       </div>
 
-      {/* Statistiken */}
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
-        <div className="p-6 bg-gray-800 rounded-lg">
-          <h3 className="text-sm text-gray-400">Gesamtkunden</h3>
-          <p className="text-2xl font-bold text-blue-400">{totalClients}</p>
-        </div>
-        <div className="p-6 bg-gray-800 rounded-lg">
-          <h3 className="text-sm text-gray-400">Aktive Projekte</h3>
-          <p className="text-2xl font-bold text-green-400">{activeProjects}</p>
-        </div>
-        <div className="p-6 bg-gray-800 rounded-lg">
-          <h3 className="text-sm text-gray-400">Abgeschlossene Projekte</h3>
-          <p className="text-2xl font-bold text-purple-400">{completedProjects}</p>
-        </div>
-        <div className="p-6 bg-gray-800 rounded-lg">
-          <h3 className="text-sm text-gray-400">Gesamtumsatz</h3>
-          <p className="text-2xl font-bold text-yellow-400">{totalRevenue.toLocaleString()}€</p>
+      {/* Stats */}
+      <div className="section">
+        <div className="stats-grid">
+          {stats.map((stat, index) => (
+            <div key={index} className="card stat-card">
+              <div className="stat-number">{stat.value}</div>
+              <p className="stat-label">{stat.label}</p>
+            </div>
+          ))}
         </div>
       </div>
 
-      {/* Schnellaktionen */}
-      <div className="p-6 bg-gray-800 rounded-lg">
-        <h2 className="mb-4 text-xl font-bold">Schnellaktionen</h2>
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <button
-            onClick={onOpenEditor}
-            className="p-4 text-left transition-colors bg-blue-600 rounded-lg hover:bg-blue-700"
-          >
-            <div className="mb-2 text-2xl">🎨</div>
-            <div className="font-medium">Landing Page erstellen</div>
-            <div className="text-sm opacity-75">Neues Design im Editor</div>
-          </button>
-          <button className="p-4 text-left transition-colors bg-green-600 rounded-lg hover:bg-green-700">
-            <div className="mb-2 text-2xl">👥</div>
-            <div className="font-medium">Neuer Kunde</div>
-            <div className="text-sm opacity-75">Kunde hinzufügen</div>
-          </button>
-          <button className="p-4 text-left transition-colors bg-purple-600 rounded-lg hover:bg-purple-700">
-            <div className="mb-2 text-2xl">📊</div>
-            <div className="font-medium">Neues Projekt</div>
-            <div className="text-sm opacity-75">Projekt erstellen</div>
-          </button>
-          <button className="p-4 text-left transition-colors bg-yellow-600 rounded-lg hover:bg-yellow-700">
-            <div className="mb-2 text-2xl">🧾</div>
-            <div className="font-medium">Rechnung erstellen</div>
-            <div className="text-sm opacity-75">Neue Rechnung</div>
-          </button>
+      {/* Quick Actions */}
+      <div className="section">
+        <h2 className="section-title">Schnellaktionen</h2>
+        <div className="actions-grid">
+          {quickActions.map((action, index) => (
+            <div 
+              key={index} 
+              className="card action-card"
+              onClick={action.action}
+            >
+              <h3 className="action-title">{action.title}</h3>
+              <p className="action-description">{action.description}</p>
+            </div>
+          ))}
         </div>
       </div>
 
-      {/* Neueste Projekte */}
-      <div className="p-6 bg-gray-800 rounded-lg">
-        <h2 className="mb-4 text-xl font-bold">Neueste Projekte</h2>
-        <div className="space-y-3">
-          {recentProjects.map((project) => (
-            <div key={project.id} className="flex items-center justify-between p-4 bg-gray-700 rounded-lg">
-              <div>
-                <h3 className="font-medium">{project.name}</h3>
-                <p className="text-sm text-gray-400">{project.client}</p>
-              </div>
-              <div className="text-right">
-                <div className={`px-2 py-1 rounded-full text-xs text-white ${
-                  project.status === 'In Arbeit' ? 'bg-blue-600' :
-                  project.status === 'Review' ? 'bg-yellow-600' :
-                  project.status === 'Fertig' ? 'bg-green-600' :
-                  'bg-gray-600'
-                }`}>
-                  {project.status}
+      {/* Recent Projects */}
+      <div className="section">
+        <h2 className="section-title">Neueste Projekte</h2>
+        <div className="projects-grid">
+          {recentProjects.map((project, index) => (
+            <div key={index} className="card">
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
+                <div>
+                  <h3 style={{ fontSize: '18px', fontWeight: '600', color: 'var(--text-primary)', margin: '0 0 4px 0' }}>
+                    {project.name}
+                  </h3>
+                  <p style={{ fontSize: '14px', color: 'var(--text-secondary)', margin: '0' }}>
+                    {project.client}
+                  </p>
                 </div>
-                <p className="mt-1 text-sm text-gray-400">{project.budget}€</p>
+                <span className={`badge ${project.badgeClass}`}>
+                  {project.status}
+                </span>
+              </div>
+
+              <div className="progress-container">
+                <div className="progress-label">
+                  <span>Fortschritt</span>
+                  <span>{project.progress}%</span>
+                </div>
+                <div className="progress-bar">
+                  <div 
+                    className="progress-fill"
+                    style={{ width: `${project.progress}%` }}
+                  ></div>
+                </div>
+              </div>
+
+              <div style={{ 
+                display: 'flex', 
+                justifyContent: 'space-between', 
+                alignItems: 'center', 
+                paddingTop: '16px', 
+                borderTop: '1px solid var(--border)' 
+              }}>
+                <span style={{ fontSize: '14px', fontWeight: '600', color: 'var(--text-primary)' }}>
+                  Budget: {project.budget}
+                </span>
+                <button className="btn btn-secondary" style={{ fontSize: '12px', padding: '8px 16px' }}>
+                  Details
+                </button>
               </div>
             </div>
           ))}
         </div>
       </div>
 
-      {/* Editor Teaser */}
-      <div className="p-6 rounded-lg bg-gradient-to-r from-blue-800 to-purple-800">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="mb-2 text-xl font-bold">🚀 Neuer Landing Page Editor</h2>
-            <p className="mb-4 text-gray-200">
-              Erstellen Sie professionelle Landing Pages mit unserem neuen Drag & Drop Editor.
-              Einfach, schnell und ohne Programmierung!
-            </p>
-            <div className="flex space-x-4 text-sm text-gray-300">
-              <span>✨ Drag & Drop</span>
-              <span>🎨 Vorgefertigte Komponenten</span>
-              <span>📱 Responsive Design</span>
-              <span>⚡ Live Vorschau</span>
-            </div>
-          </div>
-          <div className="text-right">
-            <button
-              onClick={onOpenEditor}
-              className="px-6 py-3 font-medium text-blue-800 transition-colors bg-white rounded-lg hover:bg-gray-100"
-            >
-              Jetzt ausprobieren
-            </button>
-          </div>
+      {/* Call to Action */}
+      <div className="section">
+        <div className="card" style={{ 
+          textAlign: 'center', 
+          background: 'linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%)',
+          border: '2px solid var(--accent)'
+        }}>
+          <h3 style={{ fontSize: '24px', fontWeight: 'bold', color: 'var(--text-primary)', margin: '0 0 16px 0' }}>
+            Neuer Landing Page Editor
+          </h3>
+          <p style={{ fontSize: '16px', color: 'var(--text-secondary)', margin: '0 0 24px 0' }}>
+            Erstellen Sie professionelle Landing Pages mit unserem neuen Drag & Drop Editor. 
+            Einfach, schnell und ohne Programmierung.
+          </p>
+          <button 
+            className="btn btn-primary"
+            onClick={() => setCurrentPage('editor')}
+          >
+            Jetzt ausprobieren
+          </button>
         </div>
       </div>
     </div>
