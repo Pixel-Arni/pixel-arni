@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react'
+import { useDrop, useDrag } from 'react-dnd'
 
 const ProfessionalEditor = ({ onExit }) => {
   // Basis State
@@ -59,7 +60,7 @@ const ProfessionalEditor = ({ onExit }) => {
     }
   }
 
-// Undo/Redo System
+  // Undo/Redo System
   const saveState = () => {
     setUndoStack(prev => [...prev, JSON.parse(JSON.stringify(elements))])
     setRedoStack([])
@@ -143,7 +144,21 @@ const ProfessionalEditor = ({ onExit }) => {
           { icon: '🔒', title: 'Sicher', description: 'Höchste Sicherheitsstandards' },
           { icon: '📱', title: 'Responsive', description: 'Optimiert für alle Geräte' }
         ]
-      }
+      },
+      cta: {
+        title: 'Bereit loszulegen?',
+        text: 'Starten Sie noch heute mit unserem Service',
+        buttonText: 'Jetzt starten'
+      },
+      contact: {
+        title: 'Kontaktieren Sie uns',
+        fields: ['Name', 'Email', 'Nachricht']
+      },
+      container: 'Container - Ziehen Sie Elemente hierher',
+      columns: { left: 'Linke Spalte', right: 'Rechte Spalte' },
+      gallery: { images: Array(6).fill('https://via.placeholder.com/300x200') },
+      video: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
+      embed: '<iframe>Ihr Embed-Code</iframe>'
     }
     return defaults[type] || `Inhalt für ${type}`
   }
@@ -219,6 +234,36 @@ const ProfessionalEditor = ({ onExit }) => {
         boxShadow: '0 4px 6px rgba(0, 0, 0, 0.05)',
         margin: '20px 0'
       },
+      testimonial: {
+        ...baseStyles,
+        backgroundColor: '#f8fafc',
+        border: '1px solid #e2e8f0',
+        borderRadius: '12px',
+        padding: '32px',
+        textAlign: 'center'
+      },
+      features: {
+        ...baseStyles,
+        padding: '60px 40px'
+      },
+      cta: {
+        ...baseStyles,
+        backgroundColor: '#1f2937',
+        color: '#ffffff',
+        padding: '60px 40px',
+        textAlign: 'center',
+        borderRadius: '16px'
+      },
+      container: {
+        ...baseStyles,
+        backgroundColor: '#f9fafb',
+        border: '2px dashed #d1d5db',
+        minHeight: '100px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        color: '#9ca3af'
+      },
       spacer: {
         ...baseStyles,
         height: '40px',
@@ -235,76 +280,65 @@ const ProfessionalEditor = ({ onExit }) => {
     return styles[type] || baseStyles
   }
 
-  // Drag & Drop Funktionen
-  const handleDragStart = (e, componentType) => {
-    e.dataTransfer.setData('componentType', componentType)
-    setIsDragging(true)
+  // React DND Components
+  const CanvasDropZone = ({ children }) => {
+    const [{ isOver, canDrop }, drop] = useDrop({
+      accept: 'component',
+      drop: (item, monitor) => {
+        if (!monitor.didDrop()) {
+          const newElement = {
+            id: `element_${Date.now()}`,
+            type: item.type,
+            content: getDefaultContent(item.type),
+            styles: getDefaultStyles(item.type)
+          }
+          
+          saveState()
+          setElements(prev => [...prev, newElement])
+          setSelectedElement(newElement.id)
+        }
+      },
+      collect: (monitor) => ({
+        isOver: monitor.isOver({ shallow: true }),
+        canDrop: monitor.canDrop()
+      })
+    })
+
+    return (
+      <div
+        ref={drop}
+        className={`transition-all duration-200 ${
+          isOver && canDrop ? 'bg-blue-50 ring-2 ring-blue-400 ring-opacity-50' : ''
+        }`}
+      >
+        {children}
+      </div>
+    )
   }
 
-  const findComponentByType = (type) => {
-    for (const category of Object.values(componentCategories)) {
-      if (category.components) {
-        const component = category.components.find(c => c.type === type)
-        if (component) return component
-      }
-    }
-    return null
-  }
+  const DraggableComponent = ({ component }) => {
+    const [{ isDragging }, drag] = useDrag({
+      type: 'component',
+      item: { type: component.type },
+      collect: (monitor) => ({
+        isDragging: monitor.isDragging()
+      })
+    })
 
-  const handleDragOver = (e) => {
-    e.preventDefault()
-    e.dataTransfer.dropEffect = 'copy'
-    
-    if (canvasRef.current) {
-      const rect = canvasRef.current.getBoundingClientRect()
-      const y = e.clientY - rect.top
-      showDropIndicator(y)
-    }
-  }
-
-  const showDropIndicator = (y) => {
-    const existingIndicator = document.querySelector('.drop-indicator')
-    if (existingIndicator) {
-      existingIndicator.remove()
-    }
-    
-    const indicator = document.createElement('div')
-    indicator.className = 'drop-indicator'
-    indicator.style.cssText = `
-      position: absolute;
-      left: 20px;
-      right: 20px;
-      height: 4px;
-      background: linear-gradient(90deg, #3b82f6, #8b5cf6);
-      z-index: 1000;
-      top: ${y}px;
-      border-radius: 2px;
-      box-shadow: 0 0 8px rgba(59, 130, 246, 0.6);
-    `
-    canvasRef.current.appendChild(indicator)
-  }
-
-  const handleDrop = (e) => {
-    e.preventDefault()
-    const componentType = e.dataTransfer.getData('componentType')
-    
-    const indicator = document.querySelector('.drop-indicator')
-    if (indicator) indicator.remove()
-    
-    if (componentType) {
-      saveState()
-      
-      const newElement = {
-        id: `element_${Date.now()}`,
-        type: componentType,
-        content: getDefaultContent(componentType),
-        styles: getDefaultStyles(componentType)
-      }
-      
-      setElements(prev => [...prev, newElement])
-      setSelectedElement(newElement.id)
-    }
-    setIsDragging(false)
+    return (
+      <div
+        ref={drag}
+        className={`p-4 transition-all bg-white border border-gray-200 rounded-lg cursor-move hover:shadow-md hover:border-blue-300 ${
+          isDragging ? 'opacity-50 transform scale-95' : ''
+        }`}
+      >
+        <div className="flex items-center mb-2">
+          <span className="mr-3 text-2xl">{component.icon}</span>
+          <span className="font-semibold text-gray-900">{component.name}</span>
+        </div>
+        <p className="text-xs leading-relaxed text-gray-600">{component.description}</p>
+      </div>
+    )
   }
 
   // Element-Aktionen
@@ -421,10 +455,7 @@ const ProfessionalEditor = ({ onExit }) => {
         {/* Sidebar Content */}
         <div className="flex-1 overflow-auto">
           {activeTab === 'elements' ? (
-            <ElementsPanel 
-              categories={componentCategories}
-              onDragStart={handleDragStart}
-            />
+            <ElementsPanel categories={componentCategories} />
           ) : (
             <DesignPanel 
               selectedElement={selectedElement}
@@ -533,7 +564,7 @@ const ProfessionalEditor = ({ onExit }) => {
           </div>
         </div>
 
-{/* Canvas Area */}
+        {/* Canvas Area */}
         <div className="flex-1 overflow-auto bg-gradient-to-br from-gray-100 to-gray-200">
           <div className="flex justify-center p-6">
             <div 
@@ -546,42 +577,42 @@ const ProfessionalEditor = ({ onExit }) => {
                 transformOrigin: 'top center'
               }}
             >
-              <div
-                ref={canvasRef}
-                className={`relative min-h-full ${isDragging ? 'bg-blue-50' : ''}`}
-                onDragOver={handleDragOver}
-                onDrop={handleDrop}
-                style={{ 
-                  backgroundImage: showGrid ? 'radial-gradient(circle, #e5e7eb 1px, transparent 1px)' : 'none',
-                  backgroundSize: showGrid ? '20px 20px' : 'auto'
-                }}
-              >
-                {elements.length === 0 ? (
-                  <div className="flex items-center justify-center text-gray-400 h-96">
-                    <div className="text-center">
-                      <div className="mb-4 text-6xl">🎨</div>
-                      <p className="mb-2 text-xl font-medium">Willkommen im Professional Editor</p>
-                      <p className="text-sm">Ziehen Sie Elemente aus dem linken Panel hierher</p>
+              <CanvasDropZone>
+                <div
+                  ref={canvasRef}
+                  className={`relative min-h-full ${isDragging ? 'bg-blue-50' : ''}`}
+                  style={{ 
+                    backgroundImage: showGrid ? 'radial-gradient(circle, #e5e7eb 1px, transparent 1px)' : 'none',
+                    backgroundSize: showGrid ? '20px 20px' : 'auto'
+                  }}
+                >
+                  {elements.length === 0 ? (
+                    <div className="flex items-center justify-center text-gray-400 h-96">
+                      <div className="text-center">
+                        <div className="mb-4 text-6xl">🎨</div>
+                        <p className="mb-2 text-xl font-medium">Willkommen im Professional Editor</p>
+                        <p className="text-sm">Ziehen Sie Elemente aus dem linken Panel hierher</p>
+                      </div>
                     </div>
-                  </div>
-                ) : (
-                  <div className="space-y-0">
-                    {elements.map((element, index) => (
-                      <ElementWrapper
-                        key={element.id}
-                        element={element}
-                        isSelected={selectedElement === element.id}
-                        onSelect={selectElement}
-                        onDelete={deleteElement}
-                        onDuplicate={duplicateElement}
-                        onMove={moveElement}
-                        canMoveUp={index > 0}
-                        canMoveDown={index < elements.length - 1}
-                      />
-                    ))}
-                  </div>
-                )}
-              </div>
+                  ) : (
+                    <div className="space-y-0">
+                      {elements.map((element, index) => (
+                        <ElementWrapper
+                          key={element.id}
+                          element={element}
+                          isSelected={selectedElement === element.id}
+                          onSelect={selectElement}
+                          onDelete={deleteElement}
+                          onDuplicate={duplicateElement}
+                          onMove={moveElement}
+                          canMoveUp={index > 0}
+                          canMoveDown={index < elements.length - 1}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </CanvasDropZone>
             </div>
           </div>
         </div>
@@ -615,7 +646,7 @@ const ProfessionalEditor = ({ onExit }) => {
 }
 
 // Komponente für das Elemente-Panel
-const ElementsPanel = ({ categories, onDragStart }) => {
+const ElementsPanel = ({ categories }) => {
   const [activeCategory, setActiveCategory] = useState('basic')
   const [searchTerm, setSearchTerm] = useState('')
 
@@ -666,18 +697,10 @@ const ElementsPanel = ({ categories, onDragStart }) => {
       {/* Komponenten */}
       <div className="space-y-2">
         {filteredComponents.map((component) => (
-          <div
+          <DraggableComponent
             key={component.type}
-            draggable
-            onDragStart={(e) => onDragStart(e, component.type)}
-            className="p-4 transition-all bg-white border border-gray-200 rounded-lg cursor-move hover:shadow-md hover:border-blue-300"
-          >
-            <div className="flex items-center mb-2">
-              <span className="mr-3 text-2xl">{component.icon}</span>
-              <span className="font-semibold text-gray-900">{component.name}</span>
-            </div>
-            <p className="text-xs leading-relaxed text-gray-600">{component.description}</p>
-          </div>
+            component={component}
+          />
         ))}
       </div>
     </div>
@@ -1025,6 +1048,39 @@ const renderElementContent = (element) => {
               </div>
             ))}
           </div>
+        </div>
+      )
+    
+    case 'cta':
+      return (
+        <div style={{ textAlign: 'center' }}>
+          <h3 style={{ fontSize: '36px', marginBottom: '16px' }}>{element.content.title}</h3>
+          <p style={{ fontSize: '18px', marginBottom: '32px', opacity: 0.9 }}>{element.content.text}</p>
+          <button style={{
+            backgroundColor: 'white',
+            color: '#1f2937',
+            padding: '16px 32px',
+            borderRadius: '8px',
+            border: 'none',
+            fontSize: '18px',
+            fontWeight: 'bold',
+            cursor: 'pointer'
+          }}>
+            {element.content.buttonText}
+          </button>
+        </div>
+      )
+    
+    case 'container':
+      return (
+        <div style={{ 
+          minHeight: '100px', 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'center',
+          color: '#9ca3af'
+        }}>
+          {element.content}
         </div>
       )
     
