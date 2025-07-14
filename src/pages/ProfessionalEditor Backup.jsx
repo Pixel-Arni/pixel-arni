@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react'
+import { useDrop, useDrag } from 'react-dnd'
 
 const ProfessionalEditor = ({ onExit }) => {
   // Basis State
@@ -28,33 +29,14 @@ const ProfessionalEditor = ({ onExit }) => {
         { type: 'divider', name: 'Trennlinie', icon: '➖', description: 'Horizontale Linie' }
       ]
     },
-    layout: {
-      name: 'Layout',
-      icon: '📐',
-      components: [
-        { type: 'container', name: 'Container', icon: '📦', description: 'Flexibler Container' },
-        { type: 'columns', name: '2 Spalten', icon: '⚏', description: '2-Spalten Layout' },
-        { type: 'hero', name: 'Hero Section', icon: '🚀', description: 'Große Header-Section' },
-        { type: 'card', name: 'Karte', icon: '🃏', description: 'Inhaltskarte' }
-      ]
-    },
     content: {
       name: 'Inhalt',
       icon: '📄',
       components: [
+        { type: 'hero', name: 'Hero Section', icon: '🚀', description: 'Große Kopfzeile' },
+        { type: 'card', name: 'Karte', icon: '🃏', description: 'Inhaltskarte' },
         { type: 'testimonial', name: 'Testimonial', icon: '💬', description: 'Kundenbewertung' },
-        { type: 'features', name: 'Features', icon: '⭐', description: 'Feature-Liste' },
-        { type: 'cta', name: 'Call-to-Action', icon: '📢', description: 'Handlungsaufforderung' },
-        { type: 'contact', name: 'Kontakt', icon: '📞', description: 'Kontakt-Formular' }
-      ]
-    },
-    media: {
-      name: 'Medien',
-      icon: '🎨',
-      components: [
-        { type: 'gallery', name: 'Galerie', icon: '🖼️', description: 'Bild-Galerie' },
-        { type: 'video', name: 'Video', icon: '🎬', description: 'Video-Player' },
-        { type: 'embed', name: 'Embed', icon: '🔗', description: 'Externe Inhalte' }
+        { type: 'features', name: 'Features', icon: '⭐', description: 'Feature-Liste' }
       ]
     }
   }
@@ -236,77 +218,280 @@ const ProfessionalEditor = ({ onExit }) => {
   }
 
   // Drag & Drop Funktionen
-  const handleDragStart = (e, componentType) => {
-    e.dataTransfer.setData('componentType', componentType)
-    setIsDragging(true)
-  }
+// 1. NEUER DROP ZONE (ersetze dein Canvas-Bereich):
+const CanvasDropZone = ({ children, elements, setElements, setSelectedElement, saveState, getDefaultContent, getDefaultStyles }) => {
+  const [{ isOver, canDrop }, drop] = useDrop({
+    accept: 'component',
+    drop: (item, monitor) => {
+      // Nur droppen wenn nicht über einem bestehenden Element
+      if (!monitor.didDrop()) {
+        const newElement = {
+          id: `element_${Date.now()}`,
+          type: item.type,
+          content: getDefaultContent(item.type),
+          styles: getDefaultStyles(item.type)
+        }
+        
+        saveState()
+        setElements(prev => [...prev, newElement])
+        setSelectedElement(newElement.id)
+      }
+    },
+    collect: (monitor) => ({
+      isOver: monitor.isOver({ shallow: true }),
+      canDrop: monitor.canDrop()
+    })
+  })
 
-  const findComponentByType = (type) => {
-    for (const category of Object.values(componentCategories)) {
-      if (category.components) {
-        const component = category.components.find(c => c.type === type)
-        if (component) return component
+  return (
+    <div
+      ref={drop}
+      className={`transition-all duration-200 ${
+        isOver && canDrop ? 'bg-blue-50 ring-2 ring-blue-400 ring-opacity-50' : ''
+      }`}
+    >
+      {children}
+    </div>
+  )
+}
+
+// 2. DRAGGABLE COMPONENT ITEM (ersetze deine Komponenten-Liste):
+const DraggableComponent = ({ component, onDragStart }) => {
+  const [{ isDragging }, drag] = useDrag({
+    type: 'component',
+    item: { type: component.type },
+    collect: (monitor) => ({
+      isDragging: monitor.isDragging()
+    })
+  })
+
+  return (
+    <div
+      ref={drag}
+      className={`p-4 transition-all bg-white border border-gray-200 rounded-lg cursor-move hover:shadow-md hover:border-blue-300 ${
+        isDragging ? 'opacity-50 transform scale-95' : ''
+      }`}
+    >
+      <div className="flex items-center mb-2">
+        <span className="mr-3 text-2xl">{component.icon}</span>
+        <span className="font-semibold text-gray-900">{component.name}</span>
+      </div>
+      <p className="text-xs leading-relaxed text-gray-600">{component.description}</p>
+    </div>
+  )
+}
+
+// 3. ERWEITERTE KOMPONENTEN-BIBLIOTHEK (ersetze/erweitere deine componentCategories):
+const extendedComponentCategories = {
+  basic: {
+    name: 'Grundlagen',
+    icon: '🔧',
+    components: [
+      { type: 'text', name: 'Text', icon: '📝', description: 'Einfacher Text-Block' },
+      { type: 'heading', name: 'Überschrift', icon: '📋', description: 'H1-H6 Überschriften' },
+      { type: 'button', name: 'Button', icon: '🔘', description: 'Klickbarer Button' },
+      { type: 'image', name: 'Bild', icon: '🖼️', description: 'Bilder & Grafiken' },
+      { type: 'spacer', name: 'Abstand', icon: '📏', description: 'Vertikaler Abstand' },
+      { type: 'divider', name: 'Trennlinie', icon: '➖', description: 'Horizontale Linie' }
+    ]
+  },
+  layout: {
+    name: 'Layout',
+    icon: '📐',
+    components: [
+      { type: 'container', name: 'Container', icon: '📦', description: 'Flexibler Container' },
+      { type: 'columns', name: '2 Spalten', icon: '⚏', description: '2-Spalten Layout' },
+      { type: 'hero', name: 'Hero Section', icon: '🚀', description: 'Große Header-Section' },
+      { type: 'card', name: 'Karte', icon: '🃏', description: 'Inhaltskarte' }
+    ]
+  },
+  content: {
+    name: 'Inhalt',
+    icon: '📄',
+    components: [
+      { type: 'testimonial', name: 'Testimonial', icon: '💬', description: 'Kundenbewertung' },
+      { type: 'features', name: 'Features', icon: '⭐', description: 'Feature-Liste' },
+      { type: 'cta', name: 'Call-to-Action', icon: '📢', description: 'Handlungsaufforderung' },
+      { type: 'contact', name: 'Kontakt', icon: '📞', description: 'Kontakt-Formular' }
+    ]
+  },
+  media: {
+    name: 'Medien',
+    icon: '🎨',
+    components: [
+      { type: 'gallery', name: 'Galerie', icon: '🖼️', description: 'Bild-Galerie' },
+      { type: 'video', name: 'Video', icon: '🎬', description: 'Video-Player' },
+      { type: 'embed', name: 'Embed', icon: '🔗', description: 'Externe Inhalte' }
+    ]
+  }
+}
+
+// 4. ERWEITERTE getDefaultContent FUNKTION (ergänze deine bestehende):
+const extendedGetDefaultContent = (type) => {
+  const newDefaults = {
+    // Behalte deine bestehenden...
+    hero: {
+      title: 'Willkommen bei uns',
+      subtitle: 'Wir bieten Ihnen die besten Lösungen',
+      buttonText: 'Mehr erfahren'
+    },
+    card: {
+      title: 'Karten-Titel',
+      content: 'Hier steht der Inhalt Ihrer Karte.',
+      buttonText: 'Weiterlesen'
+    },
+    testimonial: {
+      text: 'Das ist das beste Produkt das ich je verwendet habe!',
+      author: 'Max Mustermann',
+      company: 'Mustermann GmbH'
+    },
+    features: {
+      title: 'Unsere Features',
+      items: [
+        { icon: '⚡', title: 'Schnell', text: 'Blitzschnelle Performance' },
+        { icon: '🔒', title: 'Sicher', text: 'Höchste Sicherheitsstandards' },
+        { icon: '💎', title: 'Premium', text: 'Erstklassige Qualität' }
+      ]
+    },
+    cta: {
+      title: 'Bereit loszulegen?',
+      text: 'Starten Sie noch heute mit unserem Service',
+      buttonText: 'Jetzt starten'
+    },
+    contact: {
+      title: 'Kontaktieren Sie uns',
+      fields: ['Name', 'Email', 'Nachricht']
+    },
+    container: '',
+    columns: { left: 'Linke Spalte', right: 'Rechte Spalte' },
+    gallery: { images: Array(6).fill('https://via.placeholder.com/300x200') },
+    video: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
+    embed: '<iframe>Ihr Embed-Code</iframe>'
+  }
+  
+  // Fallback zu deiner bestehenden Funktion
+  return newDefaults[type] || getDefaultContent(type)
+}
+
+// 5. NEUE ELEMENT-RENDERER (für die neuen Komponenten-Typen):
+const renderNewElementTypes = (element) => {
+  const { type, content } = element
+
+  switch (type) {
+    case 'hero':
+      return (
+        <div style={{ textAlign: 'center' }}>
+          <h1 style={{ fontSize: '48px', marginBottom: '16px', fontWeight: 'bold' }}>
+            {content.title}
+          </h1>
+          <p style={{ fontSize: '20px', marginBottom: '32px', opacity: 0.9 }}>
+            {content.subtitle}
+          </p>
+          <button style={{
+            backgroundColor: 'rgba(255,255,255,0.2)',
+            color: 'white',
+            padding: '16px 32px',
+            borderRadius: '8px',
+            border: '2px solid white',
+            fontSize: '18px',
+            cursor: 'pointer'
+          }}>
+            {content.buttonText}
+          </button>
+        </div>
+      )
+    
+    case 'card':
+      return (
+        <div>
+          <h3 style={{ fontSize: '24px', marginBottom: '16px', fontWeight: 'bold' }}>
+            {content.title}
+          </h3>
+          <p style={{ marginBottom: '20px', lineHeight: '1.6' }}>
+            {content.content}
+          </p>
+          <button style={{
+            backgroundColor: '#3b82f6',
+            color: 'white',
+            padding: '8px 16px',
+            borderRadius: '6px',
+            border: 'none',
+            cursor: 'pointer'
+          }}>
+            {content.buttonText}
+          </button>
+        </div>
+      )
+    
+    case 'testimonial':
+      return (
+        <div style={{ textAlign: 'center' }}>
+          <blockquote style={{ fontSize: '18px', marginBottom: '20px', fontStyle: 'italic' }}>
+            "{content.text}"
+          </blockquote>
+          <footer>
+            <strong>{content.author}</strong>
+            <br />
+            <span style={{ opacity: 0.7 }}>{content.company}</span>
+          </footer>
+        </div>
+      )
+    
+    case 'features':
+      return (
+        <div>
+          <h3 style={{ textAlign: 'center', fontSize: '32px', marginBottom: '40px' }}>
+            {content.title}
+          </h3>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '24px' }}>
+            {content.items.map((item, index) => (
+              <div key={index} style={{ textAlign: 'center', padding: '20px' }}>
+                <div style={{ fontSize: '48px', marginBottom: '16px' }}>{item.icon}</div>
+                <h4 style={{ fontSize: '20px', marginBottom: '12px' }}>{item.title}</h4>
+                <p style={{ opacity: 0.8 }}>{item.text}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )
+    
+    case 'cta':
+      return (
+        <div style={{ textAlign: 'center' }}>
+          <h3 style={{ fontSize: '36px', marginBottom: '16px' }}>{content.title}</h3>
+          <p style={{ fontSize: '18px', marginBottom: '32px', opacity: 0.9 }}>{content.text}</p>
+          <button style={{
+            backgroundColor: 'white',
+            color: '#1f2937',
+            padding: '16px 32px',
+            borderRadius: '8px',
+            border: 'none',
+            fontSize: '18px',
+            fontWeight: 'bold',
+            cursor: 'pointer'
+          }}>
+            {content.buttonText}
+          </button>
+        </div>
+      )
+    
+    case 'container':
+      return (
+        <div style={{ 
+          minHeight: '100px', 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'center',
+          color: '#9ca3af'
+        }}>
+          {content || 'Container - Ziehen Sie Elemente hierher'}
+        </div>
+      )
+      default:
+        // Fallback zu deiner bestehenden renderElementContent Funktion
+        return null
       }
     }
-    return null
-  }
-
-  const handleDragOver = (e) => {
-    e.preventDefault()
-    e.dataTransfer.dropEffect = 'copy'
-    
-    if (canvasRef.current) {
-      const rect = canvasRef.current.getBoundingClientRect()
-      const y = e.clientY - rect.top
-      showDropIndicator(y)
-    }
-  }
-
-  const showDropIndicator = (y) => {
-    const existingIndicator = document.querySelector('.drop-indicator')
-    if (existingIndicator) {
-      existingIndicator.remove()
-    }
-    
-    const indicator = document.createElement('div')
-    indicator.className = 'drop-indicator'
-    indicator.style.cssText = `
-      position: absolute;
-      left: 20px;
-      right: 20px;
-      height: 4px;
-      background: linear-gradient(90deg, #3b82f6, #8b5cf6);
-      z-index: 1000;
-      top: ${y}px;
-      border-radius: 2px;
-      box-shadow: 0 0 8px rgba(59, 130, 246, 0.6);
-    `
-    canvasRef.current.appendChild(indicator)
-  }
-
-  const handleDrop = (e) => {
-    e.preventDefault()
-    const componentType = e.dataTransfer.getData('componentType')
-    
-    const indicator = document.querySelector('.drop-indicator')
-    if (indicator) indicator.remove()
-    
-    if (componentType) {
-      saveState()
-      
-      const newElement = {
-        id: `element_${Date.now()}`,
-        type: componentType,
-        content: getDefaultContent(componentType),
-        styles: getDefaultStyles(componentType)
-      }
-      
-      setElements(prev => [...prev, newElement])
-      setSelectedElement(newElement.id)
-    }
-    setIsDragging(false)
-  }
-
   // Element-Aktionen
   const selectElement = (elementId) => {
     setSelectedElement(elementId)
@@ -422,8 +607,8 @@ const ProfessionalEditor = ({ onExit }) => {
         <div className="flex-1 overflow-auto">
           {activeTab === 'elements' ? (
             <ElementsPanel 
-              categories={componentCategories}
-              onDragStart={handleDragStart}
+              categories={extendedComponentCategories}
+            
             />
           ) : (
             <DesignPanel 
@@ -534,58 +719,64 @@ const ProfessionalEditor = ({ onExit }) => {
         </div>
 
 {/* Canvas Area */}
-        <div className="flex-1 overflow-auto bg-gradient-to-br from-gray-100 to-gray-200">
-          <div className="flex justify-center p-6">
-            <div 
-              className="relative transition-all duration-300 bg-white shadow-xl"
-              style={{ 
-                width: getCanvasWidth(),
-                maxWidth: getCanvasMaxWidth(),
-                minHeight: '100vh',
-                transform: `scale(${zoomLevel / 100})`,
-                transformOrigin: 'top center'
-              }}
-            >
-              <div
-                ref={canvasRef}
-                className={`relative min-h-full ${isDragging ? 'bg-blue-50' : ''}`}
-                onDragOver={handleDragOver}
-                onDrop={handleDrop}
-                style={{ 
-                  backgroundImage: showGrid ? 'radial-gradient(circle, #e5e7eb 1px, transparent 1px)' : 'none',
-                  backgroundSize: showGrid ? '20px 20px' : 'auto'
-                }}
-              >
-                {elements.length === 0 ? (
-                  <div className="flex items-center justify-center text-gray-400 h-96">
-                    <div className="text-center">
-                      <div className="mb-4 text-6xl">🎨</div>
-                      <p className="mb-2 text-xl font-medium">Willkommen im Professional Editor</p>
-                      <p className="text-sm">Ziehen Sie Elemente aus dem linken Panel hierher</p>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="space-y-0">
-                    {elements.map((element, index) => (
-                      <ElementWrapper
-                        key={element.id}
-                        element={element}
-                        isSelected={selectedElement === element.id}
-                        onSelect={selectElement}
-                        onDelete={deleteElement}
-                        onDuplicate={duplicateElement}
-                        onMove={moveElement}
-                        canMoveUp={index > 0}
-                        canMoveDown={index < elements.length - 1}
-                      />
-                    ))}
-                  </div>
-                )}
+<div className="flex-1 overflow-auto bg-gradient-to-br from-gray-100 to-gray-200">
+  <div className="flex justify-center p-6">
+    <div 
+      className="relative transition-all duration-300 bg-white shadow-xl"
+      style={{ 
+        width: getCanvasWidth(),
+        maxWidth: getCanvasMaxWidth(),
+        minHeight: '100vh',
+        transform: `scale(${zoomLevel / 100})`,
+        transformOrigin: 'top center'
+      }}
+    >
+      <CanvasDropZone
+        elements={elements}
+        setElements={setElements}
+        setSelectedElement={setSelectedElement}
+        saveState={saveState}
+        getDefaultContent={extendedGetDefaultContent}
+        getDefaultStyles={getDefaultStyles}
+      >
+        <div
+          ref={canvasRef}
+          className={`relative min-h-full ${isDragging ? 'bg-blue-50' : ''}`}
+          style={{ 
+            backgroundImage: showGrid ? 'radial-gradient(circle, #e5e7eb 1px, transparent 1px)' : 'none',
+            backgroundSize: showGrid ? '20px 20px' : 'auto'
+          }}
+        >
+          {elements.length === 0 ? (
+            <div className="flex items-center justify-center text-gray-400 h-96">
+              <div className="text-center">
+                <div className="mb-4 text-6xl">🎨</div>
+                <p className="mb-2 text-xl font-medium">Willkommen im Professional Editor</p>
+                <p className="text-sm">Ziehen Sie Elemente aus dem linken Panel hierher</p>
               </div>
             </div>
-          </div>
+          ) : (
+            <div className="space-y-0">
+              {elements.map((element, index) => (
+                <ElementWrapper
+                  key={element.id}
+                  element={element}
+                  isSelected={selectedElement === element.id}
+                  onSelect={selectElement}
+                  onDelete={deleteElement}
+                  onDuplicate={duplicateElement}
+                  onMove={moveElement}
+                  canMoveUp={index > 0}
+                  canMoveDown={index < elements.length - 1}
+                />
+              ))}
+            </div>
+          )}
         </div>
-      </div>
+      </CanvasDropZone>
+    </div>
+  </div>
+</div>
 
       {/* Preview Mode */}
       {isPreviewMode && (
@@ -615,7 +806,7 @@ const ProfessionalEditor = ({ onExit }) => {
 }
 
 // Komponente für das Elemente-Panel
-const ElementsPanel = ({ categories, onDragStart }) => {
+const ElementsPanel = ({ categories }) => {  // ← onDragStart entfernt
   const [activeCategory, setActiveCategory] = useState('basic')
   const [searchTerm, setSearchTerm] = useState('')
 
@@ -666,18 +857,11 @@ const ElementsPanel = ({ categories, onDragStart }) => {
       {/* Komponenten */}
       <div className="space-y-2">
         {filteredComponents.map((component) => (
-          <div
+          <DraggableComponent
             key={component.type}
-            draggable
-            onDragStart={(e) => onDragStart(e, component.type)}
-            className="p-4 transition-all bg-white border border-gray-200 rounded-lg cursor-move hover:shadow-md hover:border-blue-300"
-          >
-            <div className="flex items-center mb-2">
-              <span className="mr-3 text-2xl">{component.icon}</span>
-              <span className="font-semibold text-gray-900">{component.name}</span>
-            </div>
-            <p className="text-xs leading-relaxed text-gray-600">{component.description}</p>
-          </div>
+            component={component}
+            // onDragStart wird nicht mehr benötigt - React DND macht das automatisch
+          />
         ))}
       </div>
     </div>

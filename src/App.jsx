@@ -1,145 +1,196 @@
 import React, { useState } from 'react'
+import { DndProvider } from 'react-dnd'
+import { HTML5Backend } from 'react-dnd-html5-backend'
 import Layout from './components/Layout'
 import Dashboard from './pages/Dashboard'
 import Clients from './pages/Clients'
 import Projects from './pages/Projects'
 import Invoices from './pages/Invoices'
 import ProfessionalEditor from './pages/ProfessionalEditor'
+// import TemplateSystem from './components/TemplateSystem' ← DIESE ZEILE AUSKOMMENTIEREN
 
 function App() {
-  // State für die aktuelle Seite
   const [currentPage, setCurrentPage] = useState('dashboard')
-  const [isEditorMode, setIsEditorMode] = useState(false)
-
-  // Globaler State für Kunden (wird zwischen Seiten geteilt)
+  
+  // State für Kunden (später in Datenbank)
   const [clients, setClients] = useState([
     {
       id: 1,
-      name: "Max Mustermann",
-      email: "max@example.com",
-      phone: "+49 123 456789",
-      company: "Mustermann GmbH",
-      status: "Aktiv",
-      createdDate: "2024-01-15"
+      name: 'Max Mustermann',
+      email: 'max@mustermann.de',
+      phone: '+49 123 456789',
+      company: 'Mustermann GmbH',
+      status: 'Aktiv',
+      createdDate: '2024-01-15'
     },
     {
       id: 2,
-      name: "Anna Schmidt",
-      email: "anna@restaurant.de",
-      phone: "+49 987 654321",
-      company: "Restaurant Schmidt",
-      status: "Aktiv",
-      createdDate: "2024-02-20"
-    },
-    {
-      id: 3,
-      name: "Tech Startup",
-      email: "info@techstartup.com",
-      phone: "+49 555 123456",
-      company: "TechStart Solutions",
-      status: "Inaktiv",
-      createdDate: "2024-03-10"
+      name: 'Anna Schmidt',
+      email: 'anna@schmidt.de',
+      phone: '+49 987 654321',
+      company: 'Schmidt & Co',
+      status: 'Aktiv',
+      createdDate: '2024-02-20'
     }
   ])
 
-  // Globaler State für Projekte (wird zwischen Seiten geteilt)
+  // State für Projekte (später in Datenbank)
   const [projects, setProjects] = useState([
     {
       id: 1,
-      name: "Fitness Studio Website",
+      name: 'Website Relaunch',
+      client: 'Max Mustermann',
       clientId: 1,
-      client: "Max Mustermann",
-      status: "In Arbeit",
-      priority: "Hoch",
-      deadline: "2024-12-31",
-      budget: 2500,
+      status: 'In Arbeit',
+      priority: 'Hoch',
+      deadline: '2024-03-15',
+      budget: 5000,
       progress: 65,
-      description: "Moderne Landing Page für Fitness Studio mit Terminbuchung",
-      createdDate: "2024-01-15",
-      updatedDate: "2024-01-20"
+      description: 'Kompletter Relaunch der Firmenwebsite',
+      createdDate: '2024-01-20'
     },
     {
       id: 2,
-      name: "Restaurant Landing Page",
+      name: 'Landing Page Kampagne',
+      client: 'Anna Schmidt',
       clientId: 2,
-      client: "Anna Schmidt",
-      status: "Review",
-      priority: "Mittel",
-      deadline: "2024-12-15",
-      budget: 1800,
+      status: 'Review',
+      priority: 'Mittel',
+      deadline: '2024-02-28',
+      budget: 2500,
       progress: 90,
-      description: "Elegante Website für Restaurant mit Online-Reservierung",
-      createdDate: "2024-02-01",
-      updatedDate: "2024-02-10"
-    },
-    {
-      id: 3,
-      name: "SaaS Landing Page",
-      clientId: 3,
-      client: "Tech Startup",
-      status: "Fertig",
-      priority: "Niedrig",
-      deadline: "2024-11-30",
-      budget: 3200,
-      progress: 100,
-      description: "Professionelle SaaS Landing Page mit Pricing-Sektion",
-      createdDate: "2024-03-01",
-      updatedDate: "2024-03-15"
+      description: 'Landing Page für neue Produktkampagne',
+      createdDate: '2024-02-01'
     }
   ])
 
-  // Editor öffnen
-  const openEditor = () => {
-    setIsEditorMode(true)
+  // State für Rechnungen (später in Datenbank)
+  const [invoices, setInvoices] = useState([
+    {
+      id: 1,
+      number: 'RE-2024-001',
+      client: 'Max Mustermann',
+      clientId: 1,
+      project: 'Website Relaunch',
+      projectId: 1,
+      amount: 2500,
+      status: 'Bezahlt',
+      date: '2024-01-25',
+      dueDate: '2024-02-25'
+    }
+  ])
+
+  // CRUD Funktionen für Kunden
+  const addClient = (client) => {
+    setClients([...clients, { ...client, id: Date.now(), createdDate: new Date().toISOString().split('T')[0] }])
   }
 
-  // Editor schließen
-  const closeEditor = () => {
-    setIsEditorMode(false)
+  const updateClient = (id, updatedClient) => {
+    setClients(clients.map(client => client.id === id ? { ...client, ...updatedClient } : client))
   }
 
-  // Funktion um die richtige Seite zu zeigen
-  const renderPage = () => {
-    switch (currentPage) {
+  const deleteClient = (id) => {
+    setClients(clients.filter(client => client.id !== id))
+    // Auch zugehörige Projekte löschen
+    setProjects(projects.filter(project => project.clientId !== id))
+  }
+
+  // CRUD Funktionen für Projekte
+  const addProject = (project) => {
+    setProjects([...projects, { ...project, id: Date.now(), createdDate: new Date().toISOString().split('T')[0] }])
+  }
+
+  const updateProject = (id, updatedProject) => {
+    setProjects(projects.map(project => project.id === id ? { ...project, ...updatedProject } : project))
+  }
+
+  const deleteProject = (id) => {
+    setProjects(projects.filter(project => project.id !== id))
+  }
+
+  // CRUD Funktionen für Rechnungen
+  const addInvoice = (invoice) => {
+    setInvoices([...invoices, { ...invoice, id: Date.now() }])
+  }
+
+  const updateInvoice = (id, updatedInvoice) => {
+    setInvoices(invoices.map(invoice => invoice.id === id ? { ...invoice, ...updatedInvoice } : invoice))
+  }
+
+  const deleteInvoice = (id) => {
+    setInvoices(invoices.filter(invoice => invoice.id !== id))
+  }
+
+  // Seiten-Rendering
+  const renderCurrentPage = () => {
+    switch(currentPage) {
       case 'dashboard':
-        return <Dashboard clients={clients} projects={projects} onOpenEditor={openEditor} />
+        return (
+          <Dashboard 
+            clients={clients}
+            projects={projects}
+            invoices={invoices}
+            onOpenEditor={() => setCurrentPage('editor')}
+          />
+        )
       case 'clients':
-        return <Clients clients={clients} setClients={setClients} />
+        return (
+          <Clients 
+            clients={clients}
+            onAdd={addClient}
+            onUpdate={updateClient}
+            onDelete={deleteClient}
+          />
+        )
       case 'projects':
-        return <Projects clients={clients} projects={projects} setProjects={setProjects} onOpenEditor={openEditor} />
+        return (
+          <Projects 
+            projects={projects}
+            clients={clients}
+            onAdd={addProject}
+            onUpdate={updateProject}
+            onDelete={deleteProject}
+          />
+        )
       case 'invoices':
-        return <Invoices clients={clients} projects={projects} />
+        return (
+          <Invoices 
+            invoices={invoices}
+            clients={clients}
+            projects={projects}
+            onAdd={addInvoice}
+            onUpdate={updateInvoice}
+            onDelete={deleteInvoice}
+          />
+        )
       case 'editor':
-        return openEditor()
+        return <ProfessionalEditor onExit={() => setCurrentPage('dashboard')} />
       case 'templates':
         return (
-          <div>
-            <h1 className="mb-6 text-3xl font-bold">Templates</h1>
-            <div className="p-8 text-center bg-gray-800 rounded-lg">
-              <p className="text-gray-400">Templates sind jetzt im Editor verfügbar!</p>
-              <button
-                onClick={openEditor}
-                className="px-6 py-2 mt-4 text-white bg-blue-600 rounded-lg hover:bg-blue-700"
-              >
-                Editor öffnen
-              </button>
-            </div>
+          <div className="p-6">
+            <h1 className="mb-4 text-2xl font-bold">Templates</h1>
+            <p className="text-gray-600">Template-System wird noch entwickelt...</p>
           </div>
         )
       default:
-        return <Dashboard clients={clients} projects={projects} onOpenEditor={openEditor} />
+        return (
+          <Dashboard 
+            clients={clients}
+            projects={projects}
+            invoices={invoices}
+            onOpenEditor={() => setCurrentPage('editor')}
+          />
+        )
     }
   }
 
-  // Wenn Editor-Modus aktiv ist, zeige nur den Editor
-  if (isEditorMode) {
-    return <ProfessionalEditor onExit={closeEditor} />
-  }
-
   return (
-    <Layout currentPage={currentPage} setCurrentPage={setCurrentPage}>
-      {renderPage()}
-    </Layout>
+    // DND Provider umschließt die gesamte App für Drag & Drop
+    <DndProvider backend={HTML5Backend}>
+      <Layout currentPage={currentPage} setCurrentPage={setCurrentPage}>
+        {renderCurrentPage()}
+      </Layout>
+    </DndProvider>
   )
 }
 
